@@ -8,6 +8,7 @@ display_scale = 0.5
 # Reading the image
 gt_dir = '/home/franz/Insync/ftapiac.96@gmail.com/Google Drive/mep/data/preliminary-gt-dataset/annotated'
 
+
 gt_img = cv.imread(gt_dir+"/d0r1t0-unmerged.png", cv.IMREAD_GRAYSCALE)
 _, gt_img = cv.threshold(gt_img, 50, 255,cv.THRESH_BINARY)
 display('ground truth', gt_img, display_scale)
