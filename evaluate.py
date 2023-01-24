@@ -19,6 +19,7 @@ img = cv.imread(img_dir+"/11.png", cv.IMREAD_GRAYSCALE)
 display('organoseg', img, display_scale)
 print(np.shape(img))
 
+
 '''
     Evaluation: pseudo code
     
