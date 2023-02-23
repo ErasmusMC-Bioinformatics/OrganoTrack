@@ -8,6 +8,7 @@ import cv2 as cv
 from functions import rescale, display
 
 def read_images(dir, wells, positions, channels, fields):
+
     '''
         Purpose: To read all files of the imaging experiment
 
@@ -60,23 +61,22 @@ def read_images(dir, wells, positions, channels, fields):
 
     # Reading images
     # imgs_all_wells = []  # wells x channels x fields
-    imgs_all_wells = []  # wells x positions x channels x fields
+    imgs_all_wells = []  # dimensions: wells x positions x channels x fields
 
     for well in range(len(wells)):
         # imgs_one_well_all_channels = []  # channels x fields
-        imgs_one_well_all_positions_and_channels = []  # positions x channels x fields
+        imgs_one_well_all_positions_and_channels = []  # dimensions: positions x channels x fields
 
         for position in range(positions):
-            imgs_one_well_position_all_channels = []  # channels x fields
+            imgs_one_well_position_all_channels = []  # dimensions: channels x fields
 
             for channel in range(channels):
-                imgs_one_channel_all_fields = []  # fields
-
+                imgs_one_channel_all_fields = []  # dimensions: fields
 
                 for field in range(len(stitching_order)):
                     # Each image (fluorescent or brightfield) appears as 1080 x 1080 x 3,
                     # but is grayscale with one channel. Thus, these 3 pseudo 'channels'
-                    # are compacted to one with cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+                    # are compacted to one with cv.IMREAD_GRAYSCALE
                     imgs_one_channel_all_fields.append(cv.imread(dir +
                                                                  '/r' + wells[well][0] +
                                                                  'c' + wells[well][1] +
@@ -209,16 +209,29 @@ if __name__ == '__main__':
     #                     '/home/franz/Documents/mep/data/organoid-images/221223-Staining-trial-OrganoTrack-BT-FT-MvR/221223-plate-2__2022-12-23T09_41_33-Measurement-1/export-ij']
     # plates_export_dir = ['/home/franz/Documents/mep/data/organoid-images/221223-Staining-trial-OrganoTrack-BT-FT-MvR/221223-plate-1__2022-12-23T10_46_22-Measurement-1/stitched_enhanced',
     #                      '/home/franz/Documents/mep/data/organoid-images/221223-Staining-trial-OrganoTrack-BT-FT-MvR/221223-plate-2__2022-12-23T09_41_33-Measurement-1/stitched_enhanced']
-    import_dir = '/home/franz/Documents/mep/data/organoid-images/221223-Staining-trial-OrganoTrack-BT-FT-MvR/221223-plate-2-zstack__2022-12-23T10_01_24-Measurement-1/auto-enhanced-fiji'
-    export_dir = '/home/franz/Documents/mep/data/organoid-images/221223-Staining-trial-OrganoTrack-BT-FT-MvR/221223-plate-2-zstack__2022-12-23T10_01_24-Measurement-1/z-stack-stitched-enhanced'
+
     fields = 6
-    wells = [('03', '09'), ('03', '10'),
-             ('04', '09'), ('04', '10')] #,
-             # ('05', '09'), ('06', '09'), ('07', '09'), ('08', '09'), ('09', '09'), ('10', '09'),
-             # ('11', '09'), ('12', '09'), ('13', '09'), ('14', '09')]
-    channels = 4
-    positions = 15
-    # for plate in range(len(import_dir)):
-    all_imgs = read_images(import_dir, fields, wells, channels, positions)
-    stiched_imgs = stitch(all_imgs, fields, wells, channels, positions)
+    import_dir = ' '
+    export_dir = ' '
+    wells = [('02', '02')]
+    experiment = 'drug_screen_april-05'
+    positions = 1
+    channels = 1
+    time_points = 0
+    if experiment == 'drug_screen_april-05':
+        fields = 25
+        import_dir = '/home/franz/Documents/mep/data/organoid-images/drug-screen-april-05/Images'
+        export_dir = '/home/franz/Documents/mep/data/organoid-images/drug-screen-april-05/stitched-Images'
+        wells = [('02', '02'), ('02', '03'), ('02', '04'), ('02', '05'), ('02', '06'), ('02', '07'), ('02', '08'),
+                 ('03', '02'), ('03', '03'), ('03', '04'), ('03', '05'), ('03', '06'), ('03', '07'), ('03', '08'),
+                 ('04', '02'), ('04', '03'), ('04', '04'), ('04', '05'), ('04', '06'), ('04', '07'), ('04', '08'),
+                 ('05', '11'), ('06', '11'), ('07', '11')]
+        positions = 1
+        channels = 1
+    elif experiment == 'staining_experiment_2':
+        wells = [('02', '02')]
+
+
+    all_imgs = read_images(import_dir, wells, positions, channels, fields)
+    stiched_imgs = stitch(all_imgs, wells, positions, channels, fields)
     export_imgs(stiched_imgs, export_dir, wells, channels, positions)

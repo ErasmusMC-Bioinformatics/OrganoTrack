@@ -1,73 +1,50 @@
 import cv2 as cv
-import matplotlib.pyplot as plt
 import numpy as np
 from functions import rescale, plotHistogram, display, blur
 
 display_scale = 0.5
 
 # Reading the image
-gt_dir = '/home/franz/Insync/ftapiac.96@gmail.com/Google Drive/mep/data/preliminary-gt-dataset/annotated'
+gt_dir = "G:/My Drive/mep/data/preliminary-gt-dataset/annotated/d0r1t0-unmerged.png"
 
-gt_img = cv.imread(gt_dir + "/d0r1t0-unmerged.png", cv.IMREAD_GRAYSCALE)
-_, gt_img = cv.threshold(gt_img, 50, 255, cv.THRESH_BINARY)
-display('ground truth', gt_img, display_scale)
-print(np.shape(gt_img))
+img_gt = cv.imread(gt_dir, cv.IMREAD_GRAYSCALE)      # grayscale
+_, img_gt = cv.threshold(img_gt, 50, 255, cv.THRESH_BINARY)                 # binary (0 or 255)
+img_gt = img_gt / 255                                                         # binary (0 or 1)
+display('ground truth', img_gt, 0.5)
 
-img_dir = '/home/franz/Insync/ftapiac.96@gmail.com/Google Drive/mep/image-analysis-pipelines/OrganoSeg/code/OrganoSeg'
-img = cv.imread(img_dir + "/11.png", cv.IMREAD_GRAYSCALE)
-display('organoseg', img, display_scale)
-print(np.shape(img))
+pred_dir = "G:/My Drive/mep/data/preliminary-gt-dataset/skimage-new.png"
+img_pred = cv.imread(pred_dir, cv.IMREAD_GRAYSCALE)
+_, img_pred = cv.threshold(img_pred, 50, 255, cv.THRESH_BINARY)
+img_pred = img_pred / 255
+display('prediction', img_pred, 0.5)
 
-'''
-    Evaluation: pseudo code
+img_sum = cv.add(img_pred, img_gt)                       # 0 or 1 or 2
+display('sum', img_sum, 0.5)
+tp_count = np.count_nonzero(img_sum == 2)
+tn_count = np.count_nonzero(img_sum == 0)
 
-    Method_being_evaluated = 'OrganoTrack'
-    Method_IOU = []
-    Method_F1 = 0
-    Method_Dice = []
+img_or = cv.bitwise_or(img_pred, img_gt)             # 0 or 1, not 2
+display('img or', img_or, 0.5)
 
-    GT_image = Import GT image
-    temp_segmented = segmented_image
-    remove_border_objects(temp_segmented)
+img_fp = cv.subtract(img_or, img_gt)      # 0 or 1, not 2
+fp_count = np.count_nonzero(img_fp == 1)
+display('false positives', img_fp, 0.5)
 
-    GT_objects = []
-    Parse through the GT image
-        for each identified object in GT image
-        create new organoid object
-            store index of image file where object is found
-            store pixel coordinates of object in that indexed image   
-        store organoid object in list GT_objects
+img_fn = cv.subtract(img_or, img_pred)      # 0 or 1, not 2
+fn_count = np.count_nonzero(img_fn == 1)
+display('false negatives', img_fn, 0.5)
 
-    number_of_GT_objects = len(GT_objects)
 
-    for each object in GT_objects
-        if there is an object in segmented image with any common px coordinates
-            Get px coordinates of the Seg object that overlaps
+# F1 Score
+F1_score = 2 * tp_count / (2 * tp_count + fp_count + fn_count)
+print('F1 score: ' + str(np.ceil(F1_score*100)))
 
-            # F1 score
-            TP_count++
+# IOU Score
+iou_score = tp_count/np.count_nonzero(img_or == 1)
+print('IOU score: ' + str(np.ceil(iou_score*100)))
 
-            # IOU
-            numerator = number of common px coordinates between GT object and Seg object
-            denominator = len(non-doubled combine of px coordinates between GT object and Seg object)
-            IOU = numerator / denominator
-            Method_IOU.append(IOU)
-
-            # Dice score
-            dice_numerator = 2*numerator
-            dice_denominator = number of px's in GT object + number of px's in Seg object
-            dice = dice_numerator/dice_denominator
-            Method_dice.append(dice)
-
-            # Remove object from segmented image
-            temp_segmented[px of segmented object] = 0
-
-        else  # there is not an overlapping object in segmented image
-            FN_count++
-
-    FP_count = number of objects remaining in temp_segmented
-
-    F1_score = 2*TP_count/(2*TP_count + FP_count + FN_count)
-'''
+# Dice score
+dice_score = 2*tp_count/(np.count_nonzero(img_pred == 1) + np.count_nonzero(img_gt == 1))
+print('Dice score: ' + str(np.ceil(dice_score*100)))
 
 cv.waitKey(0)

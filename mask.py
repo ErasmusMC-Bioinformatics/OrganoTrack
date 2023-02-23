@@ -9,7 +9,6 @@ organoid_mask = cv.imread(dir+'/d0r1t0_organoid.tiff')
 
 organoid_mask = cv.cvtColor(organoid_mask, cv.COLOR_BGR2GRAY)
 #thresh, organoid_mask = cv.threshold(organoid_mask, 100, 255, cv.THRESH_BINARY)
-#hello
 thresh, organoid_mask = cv.threshold(organoid_mask, 110, 255, cv.THRESH_BINARY)
 print(np.shape(organoid_mask))
 
