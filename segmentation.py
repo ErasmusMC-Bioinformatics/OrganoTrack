@@ -3,6 +3,9 @@ from functions import display, blur, imcomplement, adaptiveThreshold
 import numpy as np
 from skimage.morphology import reconstruction
 from skimage.filters import threshold_otsu, threshold_local
+import sys
+
+np.set_printoptions(threshold=sys.maxsize)
 
 def imreconstruct(marker, mask, imDataType):
     if np.any(marker > mask):
@@ -123,17 +126,112 @@ elif adaptiveMethod == 'skimage':
         # display(str(windowSize), adaptiveIter, 0.5)
         adaptiveSum = cv.add(adaptiveSum, adaptiveIter)
 
-# display('adaptive final', adaptiveSum, 0.75)
+display('adaptive final', adaptiveSum, 0.5)
 
 kernel = np.ones((3,3),np.uint16)
-closing = cv.morphologyEx(adaptiveSum, cv.MORPH_CLOSE, kernel)
+binary = cv.morphologyEx(adaptiveSum, cv.MORPH_CLOSE, kernel)
 
-display('closed', closing, 0.5)
+display('closed', binary, 0.5)
+binary = binary.astype(np.uint8)
+'''
+    Removing boundary objects
+'''
+# Code from ChatGPT
+# Find contours in the binary image
+contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+# # This code visualises the contours found
+# h, w = binary.shape[:2]
+# blank = np.zeros((h, w), np.uint8)
+# maxLength = len(contours[0])
+# maxIndex = 0
+# for j in range(len(contours)):
+#     if len(contours[j]) > maxLength:
+#         maxLength = len(contours[j])
+#         maxIndex = j
+#     for i in range(len(contours[j])):
+#         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
+# print(maxIndex)  # 632
+# display('removed', blank, 0.5)
+
+# Iterate over the contours and remove the ones that are partially in the image
+for contour in contours:
+    x, y, w, h = cv.boundingRect(contour)
+    # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
+
+    if x == 0 or y == 0 or x+w == img.shape[1] or y+h == img.shape[0]:
+        # Contour is partially in the image, remove it
+        cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
+        # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
+
+display('removed', binary, 0.5)
+
+'''
+    Filling holes
+'''
+inversed = cv.bitwise_not(binary)
+display('inversed', inversed, 0.5)
+
+# Find the contours of the binary image
+contours, _ = cv.findContours(inversed, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)  # 1 contour found
+h, w = inversed.shape[:2]
+marker_image = np.zeros((h, w), np.uint8)
+for j in range(len(contours)):
+    for i in range(len(contours[j])):
+        marker_image[contours[j][i][0][1]][contours[j][i][0][0]] = 255
+display('seed image', marker_image, 0.5)
+
+equal = False
+se_size = 3                     # Structuring element size
+se_shape = cv.MORPH_RECT     # Structuring element shape
+structuring_element = cv.getStructuringElement(se_shape, (se_size, se_size))
+oldImage = marker_image
+blank = np.zeros((h, w), np.uint8)
+while not equal:
+
+    newImage = cv.bitwise_and(cv.dilate(oldImage, structuring_element), inversed)
+    difference = np.subtract(newImage, oldImage)
+    if np.array_equal(difference, blank):
+        equal = True
+        print('True')
+    else:
+        oldImage = newImage
+
+filled = cv.bitwise_not(newImage)
+_,filled_binary = cv.threshold(filled,50,255,cv.THRESH_BINARY)
+display('filled', filled_binary, 0.5)  # rethreshold this one
 
 
+'''
+    Removing small noise
+'''
+# code from https://stackoverflow.com/questions/42798659/how-to-remove-small-connected-objects-using-opencv
 
-# filled = fill_holes(closing)
-#
-# display('filled', filled, 0.75)
+# find all of the connected components (white blobs in your image).
+# im_with_separated_blobs is an image where each detected blob has a different pixel value ranging from 1 to nb_blobs - 1.
+nb_blobs, im_with_separated_blobs, stats, _ = cv.connectedComponentsWithStats(filled_binary)
+# stats (and the silenced output centroids) gives some information about the blobs. See the docs for more information.
+# here, we're interested only in the size of the blobs, contained in the last column of stats.
+sizes = stats[:, -1]
+# the following lines result in taking out the background which is also considered a component, which I find for most applications to not be the expected output.
+# you may also keep the results as they are by commenting out the following lines. You'll have to update the ranges in the for loop below.
+sizes = sizes[1:]
+nb_blobs -= 1
+
+# minimum size of particles we want to keep (number of pixels).
+# here, it's a fixed value, but you can set it as you want, eg the mean of the sizes or whatever.
+min_size = 150
+
+# output image with only the kept components
+im_result = np.zeros_like(im_with_separated_blobs, dtype=np.uint8)
+# for every component in the image, keep it only if it's above min_size
+for blob in range(nb_blobs):
+    if sizes[blob] >= min_size:
+        # see description of im_with_separated_blobs above
+        im_result[im_with_separated_blobs == blob + 1] = 255
+
+display('denoised', im_result, 0.5)
+
+
 
 cv.waitKey(0)
