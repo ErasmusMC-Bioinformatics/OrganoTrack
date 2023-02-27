@@ -2,6 +2,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.filters import threshold_otsu
+from numba import jit
 
 def rescale(frame, scale=0.5):
     width = int(frame.shape[1] * scale)
@@ -43,7 +44,6 @@ def imcomplement(img):
 def mat2gray(img):
     return (img-np.amin(img))/(np.amax(img)-np.amin(img))
 
-
 def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
 
     # 1 ) already a grayscale image
@@ -76,7 +76,7 @@ def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
     #
     # 5 ) thresholding  with otsu
     imDataInfo = np.iinfo(imDataType)
-    final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(imDataType)
+    final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(np.uint8)  # typecast to uint8 to save memory
     # final, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
     # print(np.shape(final))
     # print(type(final[0][0]))
