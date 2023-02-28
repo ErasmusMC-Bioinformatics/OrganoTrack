@@ -6,6 +6,21 @@ import time
 import cv2 as cv
 import glob
 import matplotlib.pyplot as plt
+import math
+import pandas as pd
+
+'''
+    If there is any code to change / look at, search for ?
+'''
+
+def plotHistogram(data, numBins, title, xlabel, ylabel):
+    fig, ax = plt.subplots()
+    ax.hist(data, bins=numBins)
+    ax.set_title(title)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    fig.show()
+
 
 '''
     Welcome
@@ -62,13 +77,16 @@ timePoints = 1
 store_seg_dir = "/home/franz/Documents/mep/data/2023-02-24-Cis-Tos-dataset-mathijs/AZh5/Day-12/renamed/segmented"
 input_images = glob.glob(store_seg_dir + "/*.png")
 
-segmented = []
+segmentedImages = []
 for image_path in input_images:
-    segmented.append(cv.imread(image_path, cv.IMREAD_ANYDEPTH))
+    segmentedImages.append(cv.imread(image_path, cv.IMREAD_ANYDEPTH))
 
-image = segmented[0]
+# for i in range(len(segmentedImages)):
+#     display('segmented ' + str(i), segmentedImages[i], 0.25)
 
-display('first', image, 0.25)
+# image = segmented[0]
+
+# display('first', image, 0.25)
 
 
 # Diplay images
@@ -115,84 +133,70 @@ display('first', image, 0.25)
     # remove that object from the image of timepoint t+1
 
 
-# Measuring sizes of organoids
+'''
+    Measuring sizes of organoids
+'''
+segmentedObjectDFs = []  # the feature dataframes of all objects in each segmented image
 
-method = 'blobDetect'
+for image in segmentedImages:
 
-if method == 'contour':
-    # find all the contours from the B&W image
+    # > Find all the object contours in the binary image
     contours, _ = cv.findContours(image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    # contours
+    #   a list of Numpy arrays. Each array has the (x,y) oordinates of points that make up a contour
 
-    # needed to filter only our contours of interest
+    # cv.RETR_EXTERNAL
+    #   If there are objects within an object (e.g. a hole in a binary object), cv.RETR_EXTERNAL returns only the
+    #   outer contour (the binary object) and not the inner (the hole) contour.
 
-    # for each contour found
-    areas = [cv.contourArea(cnt) for cnt in contours]
+    # cv.CHAIN_APPROX_SIMPLE
+    #   A line can be represented as all the points that makeit, or by the two end point. cv.CHAIN_APPROX_SIMPLE
+    #   only returns the two endpoints of the line, saving memory.
 
-    # counts, bins = np.histogram(areas, 20)
-    # plt.hist(bins[:-1], bins, weights=counts)
-    plt.hist(areas, bins=20)
-    plt.show()
+    # > For each contour found, get
+    areas = [cv.contourArea(contour) for contour in contours]  # in pixels^2?
+    # plotHistogram(areas, numBins=20, title='Areas', xlabel='Object area', ylabel='Count')
 
-elif method == 'connectedComp':
-    # cv.waitKey(0)
-    # Filter out organoids that do not meet a range in: size, circularity, STAR, SER, etc.
-    # removing <10K pixels organoids
-    nb_blobs, im_with_separated_blobs, stats, _ = cv.connectedComponentsWithStats(image)
-    sizes = stats[:,-1]
-    sizes = sizes[1:]
-    nb_blobs -= 1
-    plt.hist(sizes, bins=20)
-    plt.show()
+    perimeters = [cv.arcLength(contour, closed=True) for contour in contours]  # in pixels?
+    # closed
+    #   as the objects are binary objects, they have closed curves/contours
+    # plotHistogram(perimeters, numBins=20, title='Perimeters', xlabel='Object perimeter', ylabel='Count')
 
-    min_size = 10000
+    circularities = [4 * math.pi * areas[i] / perimeters[i]**2 for i in range(len(areas))]  # dimensionless
+    # plotHistogram(circularities, numBins=20, title='Circularities', xlabel='Object circularity', ylabel='Count')
 
-    # output image with only the kept components
-    im_result = np.zeros_like(im_with_separated_blobs, dtype=np.uint8)
-    # for every component in the image, keep it only if it's above min_size
-    for blob in range(nb_blobs):
-        if sizes[blob] >= min_size:
-            # see description of im_with_separated_blobs above
-            im_result[im_with_separated_blobs == blob + 1] = 255
+    # > Convert feature data into dataframes
+    dictOfObjectFeatures = {'Contour': contours, 'Area': areas, 'Perimeter': perimeters, 'Circularity': circularities}
+    allObjectFeatures = pd.DataFrame(dictOfObjectFeatures, index=range(1, len(contours)+1))
+    # index goes from 1 to the total number of objects
+    segmentedObjectDFs.append(allObjectFeatures)
 
-    display('filtered', im_result, 0.25)
-    nb_blobs2, im_with_separated_blobs2, stats2, _ = cv.connectedComponentsWithStats(im_result)
-    sizes2 = stats2[:,-1]
-    sizes2 = sizes2[1:]
-    plt.hist(sizes2, bins=20)
-    plt.show()
+# > Get exclusion criteria
+exclFeature = 'Circularity'
+exclValue = 0.4  # exclude all those under this value
 
-elif method == 'blobDetect':
+# > Copy image file to edit and create a space to store the included objects and their features
+segmentedImagesCopy = segmentedImages[:]
+includedObjectDFs = []
 
+# > For each image, filter out objects to exclude from image and keep the data of objects to include
+for i in range(len(segmentedImagesCopy)):
+    # > Define element-specific exclusion condition
+    exclusionCondition = segmentedObjectDFs[i][exclFeature] < exclValue  # update so that code works when iteritems is deprecated
 
-    # Set up the detector with default parameters.
-    # Setup SimpleBlobDetector parameters.
-    params = cv.SimpleBlobDetector_Params()
-    # Change thresholds
-    params.minThreshold = 10
-    params.maxThreshold = 200
+    # > Get objects to exclude
+    excludedObjects = segmentedObjectDFs[i][exclusionCondition]  # one dataframe of objects to exclude for htat image
 
-    # Filter by Area.
-    params.filterByArea = True
-    params.minArea = 10000
+    # > Remove the excluded objects from the image
+    contoursToExclude = excludedObjects['Contour'].tolist()
+    cv.drawContours(segmentedImagesCopy[i], contoursToExclude, contourIdx=-1, color=0, thickness=-1)
 
-    detector = cv.SimpleBlobDetector_create(params)
-    print(type(detector))
+    # > Keep the objects desired
+    includedObjects = segmentedObjectDFs[i][~exclusionCondition]
+    includedObjectDFs.append(includedObjects)
 
-    # Detect blobs.
-    keypoints = detector.detect(image)
-    print(type(keypoints))  # tuple
-    print(len(keypoints))  # 0
-    print(keypoints)  # ()
-
-    # Draw detected blobs as red circles.
-    # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures
-    # the size of the circle corresponds to the size of blob
-
-    im_with_keypoints = cv.drawKeypoints(image, keypoints, np.array([]), (0, 0, 255),
-                                          cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
-    # Show blobs
-    display("Keypoints", im_with_keypoints, 0.25)
+for i in range(len(segmentedImagesCopy)):
+    display('filtered ' + str(i), segmentedImages[i], 0.25)
 
 cv.waitKey(0)
 
