@@ -77,3 +77,19 @@
 #     # Show blobs
 #     display("Keypoints", im_with_keypoints, 0.25)
 
+'''
+    Segmenting with skimage
+'''
+# elif adaptiveMethod == 'skimage':
+#
+    # for windowSize in range(13, 22, 2):
+    #     print(windowSize)
+    #     convolved = cv.blur(img, (windowSize, windowSize))  # uint8
+    #     # display('blur', convolved, 0.5)
+    #     substract = cv.subtract(convolved, img)  # uint8
+    #     # display('subtract', substract, 0.5)
+    #     otsu = threshold_otsu(substract)
+    #     adaptiveIter = (threshold_local(substract, windowSize, 'mean', otsu * fudgeFactor)).astype(imgDataType)
+    #     adaptiveIter = cv.bitwise_not(adaptiveIter)
+    #     # display(str(windowSize), adaptiveIter, 0.5)
+    #     adaptiveSum = cv.add(adaptiveSum, adaptiveIter)

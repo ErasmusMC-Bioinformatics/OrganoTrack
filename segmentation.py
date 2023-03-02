@@ -1,3 +1,5 @@
+import time
+
 import cv2 as cv
 from functions import display, blur, imcomplement, adaptiveThreshold
 import numpy as np
@@ -19,7 +21,7 @@ def imreconstruct(marker, mask, imDataType):
 
 
 def segment(img):
-    scale = 0.5
+    scale = 0.25
 
     '''
         Reading image  /Importing image
@@ -37,48 +39,63 @@ def segment(img):
     '''
         Smoothing
     '''
-
-    # Sharpening
+    times = []
+    # Sharpening 0.054, 0.0525, 0.053 s
+    tic = time.process_time()
     kernel_size = 5
     std_dev = 2
     img_gauss = cv.GaussianBlur(img, (kernel_size, kernel_size), std_dev)
     weight = 0.8
     img_sharp = cv.addWeighted(img, 1+weight, img_gauss, -weight, 0)
-    # display('01', img_sharp, scale)
+    toc = time.process_time() - tic
+    times.append(toc)
+    display('01', img_sharp, scale)
 
-    # Median blurring
+    # Median blurring 0.014, 0.017, 0.007 s
+    tic = time.process_time()
     median_kernel = 3
     img_blur = cv.medianBlur(img_sharp, median_kernel)
+    toc = time.process_time() - tic
+    times.append(toc)
     # display('02', img_blur, scale)
 
     '''
         Opening
     '''
 
-    # Erosion
+    # Erosion 0.032, 0.032, 0.021 s
+    tic = time.process_time()
     se_size = 5                     # Structuring element size
     se_shape = cv.MORPH_ELLIPSE     # Structuring element shape
     structuring_element = cv.getStructuringElement(se_shape, (2 * se_size + 1, 2 * se_size + 1))
     img_eroded = cv.erode(img_blur, structuring_element)
+    toc = time.process_time() - tic
+    times.append(toc)
     # display('03', img_eroded, scale)
 
-    # Reconstruct
+    # Reconstruct 3.022, 3.453, 2.159 s
+    tic = time.process_time()
     second_se_size = 10
-    second_se = cv.getStructuringElement(se_shape, (2 * second_se_size + 1, 2 * second_se_size + 1))
+    # second_se = cv.getStructuringElement(se_shape, (2 * second_se_size + 1, 2 * second_se_size + 1))
     img_reconstructed_1 = imreconstruct(img_eroded, img_blur, imgDataType)
+    toc = time.process_time() - tic
+    times.append(toc)
     # display('04', img_reconstructed_1, scale)   # reconstructed
 
 
     '''
         Closing
     '''
-    # Dilation
+    # Dilation 2.307, 2.419, 1.871 s
+    tic = time.process_time()
     img_dilated = cv.dilate(img_reconstructed_1, structuring_element)
     # display('05', img_dilated, scale)
     img_reconstructed_2 = imreconstruct(cv.bitwise_not(img_dilated), cv.bitwise_not(img_reconstructed_1), imgDataType)
     # display('06 again', img_reconstructed_2, scale)
     img_smoothed = cv.bitwise_not(img_reconstructed_2)
-    # display('07', img_smoothed, scale)
+    toc = time.process_time() - tic
+    times.append(toc)
+    # display('05', img_smoothed, scale)
 
     '''
         Adaptive thresholding
@@ -89,36 +106,24 @@ def segment(img):
     #     adaptiveIter = cv.adaptiveThreshold(img_smoothed, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, j-1, 2)
     #     adaptiveSum += adaptiveIter
 
-    # MATLAB copy
+    # adaptive thresholding 16.824, 16.448, 14.636 s
+    tic = time.process_time()
     adaptiveSum = (np.zeros((np.shape(img)[0], np.shape(img)[1]))).astype(np.uint8)  # save binary image as uint8 to save memory
     fudgeFactor = 0.5
-    adaptiveMethod = 'OrganoSeg'
 
-    if adaptiveMethod == 'OrganoSeg':
+    for windowSize in range(20, 251, 10):
+        adaptiveIter = adaptiveThreshold(img_smoothed, windowSize, fudgeFactor, imgDataType)
+        adaptiveSum = np.add(adaptiveSum, adaptiveIter)
 
-        for windowSize in range(20, 251, 10):
-            adaptiveIter = adaptiveThreshold(img_smoothed, windowSize, fudgeFactor, imgDataType)
-            adaptiveSum = np.add(adaptiveSum, adaptiveIter)
-
-    elif adaptiveMethod == 'skimage':
-
-        for windowSize in range(13, 22, 2):
-            print(windowSize)
-            convolved = cv.blur(img, (windowSize, windowSize))  # uint8
-            # display('blur', convolved, 0.5)
-            substract = cv.subtract(convolved, img)  # uint8
-            # display('subtract', substract, 0.5)
-            otsu = threshold_otsu(substract)
-            adaptiveIter = (threshold_local(substract, windowSize, 'mean', otsu*fudgeFactor)).astype(imgDataType)
-            adaptiveIter = cv.bitwise_not(adaptiveIter)
-            # display(str(windowSize), adaptiveIter, 0.5)
-            adaptiveSum = cv.add(adaptiveSum, adaptiveIter)
-
-    # display('adaptive', adaptiveSum, 0.5)
+    toc = time.process_time() - tic
+    times.append(toc)
+    # display('06', adaptiveSum, scale)
 
     '''
         Removing small noise
     '''
+    # 0.370, 0.243, 0.438 s
+    tic = time.process_time()
     # code from https://stackoverflow.com/questions/42798659/how-to-remove-small-connected-objects-using-opencv
 
     # find all of the connected components (white blobs in your image).
@@ -144,19 +149,26 @@ def segment(img):
             # see description of im_with_separated_blobs above
             im_result[im_with_separated_blobs == blob + 1] = 255
 
-    # display('denoised', im_result, 0.5)
+    toc = time.process_time() - tic
+    times.append(toc)
+    # display('07', im_result, scale)
 
     '''
         Smoothen
     '''
-
-    kernel = np.ones((3,3),np.uint16)
+    # 0.0139, 0.0163, 0.004 s
+    tic = time.process_time()
+    kernel = np.ones((3, 3), np.uint16)
     binary = cv.morphologyEx(im_result, cv.MORPH_CLOSE, kernel)
-    # display('closed', binary, 0.5)
+    toc = time.process_time() - tic
+    times.append(toc)
+    # display('08 smoothed', binary, scale)
 
     '''
         Removing boundary objects
     '''
+    # 0.0276, 0.0149, 0.016 s
+    tic = time.process_time()
     # Find contours in the binary image
     contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
@@ -184,11 +196,15 @@ def segment(img):
             cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
             # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
 
-    # display('removed', binary, 0.5)
+    toc = time.process_time() - tic
+    times.append(toc)
+    # display('09 removed boundary', binary, scale)
 
     '''
         Filling holes
     '''
+    # 8.575, 9.611, 8.633 s
+    tic = time.process_time()
     inversed = cv.bitwise_not(binary)
     # display('inversed', inversed, 0.5)
 
@@ -219,22 +235,17 @@ def segment(img):
 
     filled = cv.bitwise_not(newImage)
     _,filled_binary = cv.threshold(filled,50,255,cv.THRESH_BINARY)
-    # display('filled', filled_binary, 0.5)  # rethreshold this one
+    toc = time.process_time() - tic
+    times.append(toc)
+    print(times)
+    display('10 filled', filled_binary, scale)  # rethreshold this one
+
 
     return filled_binary
 
 
-if  __name__ == '__main__':
-    dir = '/home/franz/Documents/mep/data/preliminary-gt-dataset'
-    img = cv.imread(dir+'/d0r1t0.tiff', cv.IMREAD_ANYDEPTH)
-    # display('original', img, 0.5)
-    segmented = segment(img)
-    store_seg_dir = "/home/franz/Documents/mep/data/2023-02-24-Cis-Tos-dataset-mathijs/AZh5/Day-12/renamed/segmented"
-    # for i in range(len(segmented_images)):
-    filename = "/segmentation-" + str(0 + 1) + ".png"
-    cv.imwrite(store_seg_dir + filename, segmented)
-    # display('segmented', segmented, 0.5)
-
-    # cv.waitKey(0)
-
-
+if __name__ == '__main__':
+    dataDir = '/home/franz/Documents/mep/data/2023-02-24-Cis-Tos-dataset-mathijs/AZh5/Day-6'
+    img = cv.imread(dataDir+'/B2 10x.jpg', cv.IMREAD_GRAYSCALE)
+    segment(img)
+    cv.waitKey(0)

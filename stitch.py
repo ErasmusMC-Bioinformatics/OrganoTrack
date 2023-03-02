@@ -5,20 +5,23 @@ Stitch
 
 import numpy as np
 import cv2 as cv
+import glob
+import os
 from functions import rescale, display
 
-def read_images(dir, wells, positions, channels, timePoints, fields):
-# edit:
-# - take image file format as input. File formats change.
-# - take well layout as e.g. (04, 04)
-# - take the number of positions and create a list with names to iterate through
-# - take the number of channels and create a list with names to iterate through
-# - take the number of timePoints and create a list with the names to iterate through
-# - make it so general that the user can add whatever variables they desire (positions, channels, timePoints)
-#   and the program would create the list for reading.
-# - or consider if all files should be read, irrespective of the name and organised as they come.
-# the core of the last 2 points is: does the image data need a data structure, or is a list with indexes of the contents?
-# it depends on how the user wants to process the data
+
+def readImages(dataDir):  #, wells, positions, channels, timePoints, fields):
+    # edit:
+    # - take image file format as input. File formats change.
+    # - take well layout as e.g. (04, 04)
+    # - take the number of positions and create a list with names to iterate through
+    # - take the number of channels and create a list with names to iterate through
+    # - take the number of timePoints and create a list with the names to iterate through
+    # - make it so general that the user can add whatever variables they desire (positions, channels, timePoints)
+    #   and the program would create the list for reading.
+    # - or consider if all files should be read, irrespective of the name and organised as they come.
+    # the core of the last 2 points is: does the image data need a data structure, or is a list with indexes of the contents?
+    # it depends on how the user wants to process the data
 
     '''
         Purpose: To read all files of the imaging experiment
@@ -40,78 +43,93 @@ def read_images(dir, wells, positions, channels, timePoints, fields):
 
     '''
 
-    # Stitching order
-    fields_25_stitching_order = ['02', '03', '04', '05', '06',
-                                 '11', '10', '09', '08', '07',
-                                 '12', '13', '01', '14', '15',
-                                 '20', '19', '18', '17', '16',
-                                 '21', '22', '23', '24', '25' ]
-    fields_25_rows = 5
+    # # Stitching order
+    # fields_25_stitching_order = ['02', '03', '04', '05', '06',
+    #                              '11', '10', '09', '08', '07',
+    #                              '12', '13', '01', '14', '15',
+    #                              '20', '19', '18', '17', '16',
+    #                              '21', '22', '23', '24', '25' ]
+    # fields_25_rows = 5
+    #
+    # fields_9_stitching_order = ['02', '03', '04',
+    #                             '06', '01', '05',
+    #                             '07', '08', '09']
+    #
+    # # using positions
+    # fields_6_stitching_order = ['02', '01', '03',
+    #                             '06', '05', '04']
+    #
+    # fields_9_rows = 3
+    #
+    # if fields == 6:
+    #     stitching_order = fields_6_stitching_order
+    # elif fields == 9:
+    #     stitching_order = fields_9_stitching_order
+    # elif fields == 25:
+    #     stitching_order = fields_25_stitching_order
+    # elif fields == 1:
+    #     stitching_order = ['01']
+    #
+    # channel_names = ['1', '2', '3', '4']
+    # position_names = ['01', '02', '03', '04', '05',
+    #                   '06', '07', '08', '09', '10',
+    #                   '11', '12', '13', '14', '15']
+    # timePoint_names = ['1', '2', '3', '4']  # for however long there are timepoints
+    #
+    # # Reading images
+    # imgs_all_wells = []  # dimensions: wells x positions x channels x time x fields
+    #
+    # for well in range(len(wells)):
+    #     # imgs_one_well_all_channels = []  # channels x fields
+    #     imgs_one_well_all_positions_channels_and_times = []  # dimensions: positions x channels x time x fields
+    #
+    #     for position in range(positions):
+    #         imgs_one_well_position_all_channels_and_times = []  # dimensions: channels x time x fields
+    #
+    #         for channel in range(channels):
+    #             imgs_one_channel_all_times_and_fields = []  # dimensions: time x fields
+    #
+    #             for timePoint in range(timePoints):
+    #                 imgs_one_timePoint_all_fields = []  # dimensions: fields
+    #
+    #                 for field in range(len(stitching_order)):
+    #                     # cv.IMREAD_GRAYSCALE allows a 16-bit image to remain as 16-bit
+    #                     imgs_one_timePoint_all_fields.append(cv.imread(dir +
+    #                                                                  '/r' + wells[well][0] +
+    #                                                                  'c' + wells[well][1] +
+    #                                                                  'f' + stitching_order[field] +
+    #                                                                  'p' + position_names[position] +
+    #                                                                  '-ch' + channel_names[channel] +
+    #                                                                  'sk' + timePoint_names[timePoint] +
+    #                                                                  'fk1fl1.tif', cv.IMREAD_ANYDEPTH))
+    #                 # at the end of each time point
+    #                 imgs_one_channel_all_times_and_fields.append(imgs_one_timePoint_all_fields)
+    #
+    #             # at the end of each channel
+    #             imgs_one_well_position_all_channels_and_times.append(imgs_one_channel_all_times_and_fields)
+    #
+    #         # at the end of each well position
+    #         imgs_one_well_all_positions_channels_and_times.append(imgs_one_well_position_all_channels_and_times)
+    #
+    #     # at the end of each well
+    #     imgs_all_wells.append(imgs_one_well_all_positions_channels_and_times)
 
-    fields_9_stitching_order = ['02', '03', '04',
-                                '06', '01', '05',
-                                '07', '08', '09']
+    print("\nReading data...")
 
-    # using positions
-    fields_6_stitching_order = ['02', '01', '03',
-                                '06', '05', '04']
+    # > Get the names and extensions of the image files in the directory
+    inputImagesNames = os.listdir(dataDir)
 
-    fields_9_rows = 3
+    # > Create directory paths for each image file
+    imagePaths = [dataDir + '/' + imageName for imageName in inputImagesNames]
 
-    if fields == 6:
-        stitching_order = fields_6_stitching_order
-    elif fields == 9:
-        stitching_order = fields_9_stitching_order
-    elif fields == 25:
-        stitching_order = fields_25_stitching_order
-    elif fields == 1:
-        stitching_order = ['01']
+    # > Read images
+    inputImages = [cv.imread(imagePath, cv.IMREAD_GRAYSCALE) for imagePath in imagePaths]
 
-    channel_names = ['1', '2', '3', '4']
-    position_names = ['01', '02', '03', '04', '05',
-                      '06', '07', '08', '09', '10',
-                      '11', '12', '13', '14', '15']
-    timePoint_names = ['1', '2', '3', '4']  # for however long there are timepoints
+    print("Finished reading data.")
 
-    # Reading images
-    imgs_all_wells = []  # dimensions: wells x positions x channels x time x fields
+    print("\nThere is/are in total " + str(len(inputImagesNames)) + " image(s).")
 
-    for well in range(len(wells)):
-        # imgs_one_well_all_channels = []  # channels x fields
-        imgs_one_well_all_positions_channels_and_times = []  # dimensions: positions x channels x time x fields
-
-        for position in range(positions):
-            imgs_one_well_position_all_channels_and_times = []  # dimensions: channels x time x fields
-
-            for channel in range(channels):
-                imgs_one_channel_all_times_and_fields = []  # dimensions: time x fields
-
-                for timePoint in range(timePoints):
-                    imgs_one_timePoint_all_fields = []  # dimensions: fields
-
-                    for field in range(len(stitching_order)):
-                        # cv.IMREAD_GRAYSCALE allows a 16-bit image to remain as 16-bit
-                        imgs_one_timePoint_all_fields.append(cv.imread(dir +
-                                                                     '/r' + wells[well][0] +
-                                                                     'c' + wells[well][1] +
-                                                                     'f' + stitching_order[field] +
-                                                                     'p' + position_names[position] +
-                                                                     '-ch' + channel_names[channel] +
-                                                                     'sk' + timePoint_names[timePoint] +
-                                                                     'fk1fl1.tif', cv.IMREAD_ANYDEPTH))
-                    # at the end of each time point
-                    imgs_one_channel_all_times_and_fields.append(imgs_one_timePoint_all_fields)
-
-                # at the end of each channel
-                imgs_one_well_position_all_channels_and_times.append(imgs_one_channel_all_times_and_fields)
-
-            # at the end of each well position
-            imgs_one_well_all_positions_channels_and_times.append(imgs_one_well_position_all_channels_and_times)
-
-        # at the end of each well
-        imgs_all_wells.append(imgs_one_well_all_positions_channels_and_times)
-
-    return imgs_all_wells
+    return inputImages, inputImagesNames
 
 
 def stitch(unstitched_images, wells, positions, channels, fields):
