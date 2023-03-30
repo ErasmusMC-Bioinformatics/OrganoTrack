@@ -1,7 +1,10 @@
+import time
+
 import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage.filters import threshold_otsu
+
 from numba import jit
 
 def rescale(frame, scale=0.5):
@@ -10,6 +13,16 @@ def rescale(frame, scale=0.5):
     dimensions = (width, height)
 
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
+
+
+
+def mask(original, binary):
+    '''
+    :param original: The input microscopy image
+    :param binary: The binary image as a result of segmentation
+    :return: The regions of interest on the original image defined by segmentation
+    '''
+    return cv.bitwise_and(original, original, mask=binary)
 
 
 def plotHistogram(img1, label1, img2, label2, title):
@@ -45,18 +58,25 @@ def mat2gray(img):
     return (img-np.amin(img))/(np.amax(img)-np.amin(img))
 
 def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
-
+    print("\n")
+    print(windowSize)
+    tic = time.process_time()
     # 1 ) already a grayscale image
     # print(img)
     img_double = mat2gray(img)
+    toc = time.process_time() - tic
+    print("mat2gray: " + str(toc))
     # print(img_double)
     # print(np.shape(img_double))
 
     # 2 ) imfilter
+    tic = time.process_time()
     if mode == 'mean':
         kernel = np.ones((windowSize, windowSize), dtype=np.float32)
-        kernel /= windowSize*windowSize
-        convolved = cv.filter2D(img_double, -1, kernel)
+        kernel /= windowSize**2
+        convolved = cv.filter2D(img_double, -1, kernel)  # execute correlation. Returns np.float64
+    toc = time.process_time() - tic
+    print("filter: " + str(toc))
     # print(convolved)
     # print(np.shape(convolved))
 
@@ -67,17 +87,26 @@ def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
     #     convolved = cv.GaussianBlur(img, (windowSize, windowSize), 0)
 
     # 3 )           - correct element wise subtraction
+    tic = time.process_time()
     subtract = np.subtract(convolved, img_double)
+    toc = time.process_time() - tic
+    print("sub: " + str(toc))
     #
     # 4 ) Calculates Otsu's threshold for each element
+    tic = time.process_time()
     otsu = threshold_otsu(subtract)
+    toc = time.process_time() - tic
+    print("otsu: " + str(toc))
     # # _, otsu = cv.threshold(substract, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     # print(otsu)
     #
     # 5 ) thresholding  with otsu
+    tic = time.process_time()
     imDataInfo = np.iinfo(imDataType)
     final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(np.uint8)  # typecast to uint8 to save memory
     # final, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
     # print(np.shape(final))
     # print(type(final[0][0]))
+    toc = time.process_time() - tic
+    print("final: " + str(toc))
     return final

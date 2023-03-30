@@ -1,5 +1,5 @@
 from stitch import readImages
-from segmentation import segment
+from segmentation import segmentWithOrganoSegPy
 from functions import display
 import numpy as np
 import time
@@ -14,6 +14,23 @@ from datetime import datetime
 '''
     If there is any code to change / look at, search for ?
 '''
+
+def saveData(parentDataDir, images, imageNames):
+    '''
+    :param inputDataDir: parent directory where image data will be stored
+    :param images: image data
+    :param imageNames: image names for storage
+    '''
+
+    # > Create a unique daughter path for storage
+    dateTimeNow = datetime.now()
+    storagePath = parentDataDir + '/segmented-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S')
+    os.mkdir(storagePath)
+
+    # > Store
+    for i in range(len(images)):
+        cv.imwrite(storagePath + '/' + imageNames[i], images[i])
+
 
 def plotHistogram(data, numBins, title, xlabel, ylabel):
     fig, ax = plt.subplots()
@@ -53,22 +70,16 @@ def organotrack():
             segmentedImages = []
             for i in range(len(inputImages)):
                 print("\nSegmenting image " + str(i + 1) + "...")
-                segmentedImages.append(segment(inputImages[i]))
+                segmentedImages.append(segmentWithOrganoSegPy(inputImages[i]))
                 print("Image " + str(i + 1) + " segmented.")
             print("\nSegmentation completed.")
 
+
+            # > Store segmentation results
             storeChoice = input("\nDo you want to store the segmentation results? Y/N")
 
             if storeChoice == 'Y' or 'y':
-
-                # > Create a new path
-                dateTimeNow = datetime.now()
-                storagePath = dataDir + '/segmented-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S')
-                os.mkdir(storagePath)
-
-                # > Store
-                for i in range(len(segmentedImages)):
-                    cv.imwrite(storagePath + '/' + inputImagesNames[i], segmentedImages[i])
+                saveData(dataDir, segmentedImages, inputImagesNames)
 
     elif loadingChoice == '2':
         print("Enter loading data directory")
@@ -254,3 +265,4 @@ def organotrack():
     # Export to CSV
 
     # Plotting
+

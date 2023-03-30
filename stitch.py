@@ -116,8 +116,8 @@ def readImages(dataDir):  #, wells, positions, channels, timePoints, fields):
 
     print("\nReading data...")
 
-    # > Get the names and extensions of the image files in the directory
-    inputImagesNames = os.listdir(dataDir)
+    # > Get the names and extensions of the image files in the directory, sort alphabetically
+    inputImagesNames = sorted(os.listdir(dataDir))
 
     # > Create directory paths for each image file
     imagePaths = [dataDir + '/' + imageName for imageName in inputImagesNames]

@@ -1,18 +1,73 @@
 import time
-
-import cv2
+import os
+from datetime import datetime
 import cv2 as cv
-from functions import display, blur, imcomplement, adaptiveThreshold
 import numpy as np
 from skimage.morphology import reconstruction
-from skimage.filters import threshold_otsu, threshold_local
-import skimage
-import sys
-from numba import jit
-from functions import mat2gray
-from scipy.ndimage import correlate
+from skimage.filters import threshold_otsu
 
-np.set_printoptions(threshold=sys.maxsize)
+
+def imcomplement(img):
+    return 255 - img
+
+
+def mat2gray(img):
+    return (img-np.amin(img))/(np.amax(img)-np.amin(img))
+
+def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
+    # print("\n")
+    # print(windowSize)
+    tic = time.process_time()
+    # 1 ) already a grayscale image
+    # print(img)
+    img_double = mat2gray(img)
+    toc = time.process_time() - tic
+    # print("mat2gray: " + str(toc))
+    # print(img_double)
+    # print(np.shape(img_double))
+
+    # 2 ) imfilter
+    tic = time.process_time()
+    if mode == 'mean':
+        kernel = np.ones((windowSize, windowSize), dtype=np.float32)
+        kernel /= windowSize**2
+        convolved = cv.filter2D(img_double, -1, kernel)  # execute correlation. Returns np.float64
+    toc = time.process_time() - tic
+    # print("filter: " + str(toc))
+    # print(convolved)
+    # print(np.shape(convolved))
+
+        # convolved = cv.blur(img, (windowSize, windowSize))
+    # elif mode == 'median':
+    #     convolved = cv.medianBlur(img, windowSize)
+    # elif mode == 'Gaussian':
+    #     convolved = cv.GaussianBlur(img, (windowSize, windowSize), 0)
+
+    # 3 )           - correct element wise subtraction
+    tic = time.process_time()
+    subtract = np.subtract(convolved, img_double)
+    toc = time.process_time() - tic
+    # print("sub: " + str(toc))
+    #
+    # 4 ) Calculates Otsu's threshold for each element
+    tic = time.process_time()
+    otsu = threshold_otsu(subtract)
+    toc = time.process_time() - tic
+    # print("otsu: " + str(toc))
+    # # _, otsu = cv.threshold(substract, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    # print(otsu)
+    #
+    # 5 ) thresholding  with otsu
+    tic = time.process_time()
+    imDataInfo = np.iinfo(imDataType)
+    final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(np.uint8)  # typecast to uint8 to save memory
+    # final, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
+    # print(np.shape(final))
+    # print(type(final[0][0]))
+    toc = time.process_time() - tic
+    # print("final: " + str(toc))
+    return final
+
 
 
 def imreconstruct(marker, mask, imDataType):
@@ -30,7 +85,12 @@ def imreconstruct(marker, mask, imDataType):
     return (reconstruction(marker, mask)).astype(imDataType)  # reconstruction returns float64. Convert to e.g. uint8
 
 
-def segmentWithOrganoSegPy(img):
+def SegmentWithOrganoSegPy(img):
+    '''
+    segmentWithOrganoSegPy: segments
+    :param img:
+    :return:
+    '''
 
     imageDisplayScale = 0.25
     imgDataType = img.dtype  # image.dtype = the bitsize of the image, e.g. uint8 (0 - 255) or uint16 (0 65535)
@@ -178,41 +238,41 @@ def segmentWithOrganoSegPy(img):
     times.append(toc)
     # display('08 smoothed', binary, imageDisplayScale)
 
-    '''
-        Removing boundary objects
-    '''
-    # 0.0276, 0.0149, 0.016 s
-    tic = time.process_time()
-    # Find contours in the binary image
-    contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-    # # This code visualises the contours found
-    # h, w = binary.shape[:2]
-    # blank = np.zeros((h, w), np.uint8)
-    # maxLength = len(contours[0])
-    # maxIndex = 0
-    # for j in range(len(contours)):
-    #     if len(contours[j]) > maxLength:
-    #         maxLength = len(contours[j])
-    #         maxIndex = j
-    #     for i in range(len(contours[j])):
-    #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
-    # print(maxIndex)  # 632
-    # display('removed', blank, 0.5)
-
-    # Iterate over the contours and remove the ones that are partially in the image
-    for contour in contours:
-        x, y, w, h = cv.boundingRect(contour)
-        # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
-
-        if x == 0 or y == 0 or x+w == img.shape[1] or y+h == img.shape[0]:
-            # Contour is partially in the image, remove it
-            cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
-            # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
-
-    toc = time.process_time() - tic
-    times.append(toc)
-    # display('09 removed boundary', binary, imageDisplayScale)
+    # '''
+    #     Removing boundary objects
+    # '''
+    # # 0.0276, 0.0149, 0.016 s
+    # tic = time.process_time()
+    # # Find contours in the binary image
+    # contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    #
+    # # # This code visualises the contours found
+    # # h, w = binary.shape[:2]
+    # # blank = np.zeros((h, w), np.uint8)
+    # # maxLength = len(contours[0])
+    # # maxIndex = 0
+    # # for j in range(len(contours)):
+    # #     if len(contours[j]) > maxLength:
+    # #         maxLength = len(contours[j])
+    # #         maxIndex = j
+    # #     for i in range(len(contours[j])):
+    # #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
+    # # print(maxIndex)  # 632
+    # # display('removed', blank, 0.5)
+    #
+    # # Iterate over the contours and remove the ones that are partially in the image
+    # for contour in contours:
+    #     x, y, w, h = cv.boundingRect(contour)
+    #     # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
+    #
+    #     if x == 0 or y == 0 or x+w == img.shape[1] or y+h == img.shape[0]:
+    #         # Contour is partially in the image, remove it
+    #         cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
+    #         # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
+    #
+    # toc = time.process_time() - tic
+    # times.append(toc)
+    # # display('09 removed boundary', binary, imageDisplayScale)
 
     '''
         Filling holes
@@ -258,13 +318,3 @@ def segmentWithOrganoSegPy(img):
 
     return filled_binary
 
-
-if __name__ == '__main__':
-    dataDir = '/home/franz/Documents/mep/data/2023-02-24-Cis-Tos-dataset-mathijs/AZh5/Day-12'
-    imageMPS = cv.imread(dataDir+'/D7 1.tif', cv.IMREAD_GRAYSCALE)
-    segmented = segmentWithOrganoSegPy(imageMPS)
-    display('final', segmented, 0.25)
-    # BTdir = '/home/franz/Documents/mep/data/cisplatin-drug-screen/field-1-rep-1'
-    # imageBT = cv.imread(BTdir + '/d0r1t0.tiff', cv.IMREAD_GRAYSCALE)
-    # segmentWithOrganoSegPy(imageBT)
-    cv.waitKey(0)
