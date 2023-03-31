@@ -238,40 +238,40 @@ def SegmentWithOrganoSegPy(img):
     times.append(toc)
     # display('08 smoothed', binary, imageDisplayScale)
 
-    # '''
-    #     Removing boundary objects
-    # '''
-    # # 0.0276, 0.0149, 0.016 s
-    # tic = time.process_time()
-    # # Find contours in the binary image
-    # contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    #
-    # # # This code visualises the contours found
-    # # h, w = binary.shape[:2]
-    # # blank = np.zeros((h, w), np.uint8)
-    # # maxLength = len(contours[0])
-    # # maxIndex = 0
-    # # for j in range(len(contours)):
-    # #     if len(contours[j]) > maxLength:
-    # #         maxLength = len(contours[j])
-    # #         maxIndex = j
-    # #     for i in range(len(contours[j])):
-    # #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
-    # # print(maxIndex)  # 632
-    # # display('removed', blank, 0.5)
-    #
-    # # Iterate over the contours and remove the ones that are partially in the image
-    # for contour in contours:
-    #     x, y, w, h = cv.boundingRect(contour)
-    #     # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
-    #
-    #     if x == 0 or y == 0 or x+w == img.shape[1] or y+h == img.shape[0]:
-    #         # Contour is partially in the image, remove it
-    #         cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
-    #         # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
-    #
-    # toc = time.process_time() - tic
-    # times.append(toc)
+    '''
+        Removing boundary objects
+    '''
+    # 0.0276, 0.0149, 0.016 s
+    tic = time.process_time()
+    # Find contours in the binary image
+    contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    # # This code visualises the contours found
+    # h, w = binary.shape[:2]
+    # blank = np.zeros((h, w), np.uint8)
+    # maxLength = len(contours[0])
+    # maxIndex = 0
+    # for j in range(len(contours)):
+    #     if len(contours[j]) > maxLength:
+    #         maxLength = len(contours[j])
+    #         maxIndex = j
+    #     for i in range(len(contours[j])):
+    #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
+    # print(maxIndex)  # 632
+    # display('removed', blank, 0.5)
+
+    # Iterate over the contours and remove the ones that are partially in the image
+    for contour in contours:
+        x, y, w, h = cv.boundingRect(contour)
+        # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
+
+        if x == 0 or y == 0 or x+w == img.shape[1] or y+h == img.shape[0]:
+            # Contour is partially in the image, remove it
+            cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
+            # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
+
+    toc = time.process_time() - tic
+    times.append(toc)
     # # display('09 removed boundary', binary, imageDisplayScale)
 
     '''
