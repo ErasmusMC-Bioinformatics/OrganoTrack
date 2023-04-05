@@ -3,7 +3,11 @@ import numpy as np
 import skimage.measure
 import pandas as pd
 import cv2 as cv
+import math
 from Displaying import Display
+
+def CalculateRoundness(area, perimeter):
+    return 4 * math.pi * area / (perimeter ** 2)
 
 def MeasureMorphometry(unlabeledImage):
     # https://scikit-image.org/docs/stable/api/skimage.measure.html#skimage.measure.regionprops

@@ -4,25 +4,24 @@ import cv2 as cv
 import pandas as pd
 import numpy as np
 from skimage.measure import regionprops
+from Measuring import CalculateRoundness
 
-
-def SaveData(parentDataDir, images, imageNames):
+def SaveData(exportPath, images, imagePaths):
     '''
-    :param inputDataDir: parent directory where image data will be stored
-    :param images: image data
-    :param imageNames: image names for storage
+    :param exportPath: parent directory for analysis export
+    :param images: list of images
+    :param imageNames: list of input image paths
     '''
-
     # > Create a unique daughter path for storage
     dateTimeNow = datetime.now()
-    storagePath = parentDataDir + '/segmented-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S')
+    storagePath = exportPath / ('segmented-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S'))
     os.mkdir(storagePath)
 
     # > Store
     for i in range(len(images)):
-        cv.imwrite(storagePath + '/' + imageNames[i], images[i])
+        cv.imwrite(str(storagePath / imagePaths[i].name), images[i])
 
-
+# Function adapted from OrganoID (Matthews et al. 2022 PLOS Compt Biol)
 def ExportImageStackMeasurements(outputPath, propertiesToMeasure, imageStacks, imageConditions):
     '''
     :param outputPath: Complete path to the .xlsx file
@@ -33,8 +32,8 @@ def ExportImageStackMeasurements(outputPath, propertiesToMeasure, imageStacks, i
     with pd.ExcelWriter(str(outputPath.absolute())) as writer:
         # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
 
-        for propertyName in propertiesToMeasure:
-            for i in range(len(imageStacks)):
+        for propertyName in propertiesToMeasure:  # if 'roundness'
+            for i in range(len(imageStacks)):       # for each stack
 
                 size = (np.max(imageStacks[i]) + 1,     # the highest label in the whole stack + 1
                         imageStacks[i].shape[0])        # num of images in stack (i.e. num of time points)
@@ -44,7 +43,10 @@ def ExportImageStackMeasurements(outputPath, propertiesToMeasure, imageStacks, i
                 for t in range(imageStacks[i].shape[0]):        # for each image in the stack
                     regions = regionprops(imageStacks[i][t])        # get RegionProperties objects
                     for region in regions:                          # for each RP object
-                        value = getattr(region, propertyName)           # get the property value of that region
+                        if propertyName == 'roundness':
+                            value = CalculateRoundness(getattr(region, 'area'), getattr(region, 'perimeter'))
+                        else:
+                            value = getattr(region, propertyName)           # get the property value of that region
                         label = region.label                            # get the label
                         data.iloc[label, t] = str(value)                # store the property value by its label in df
 
