@@ -1,0 +1,14 @@
+name: Hello World
+
+on:
+  push:
+    branches:  # do the actions on these branches
+      - 'master'
+
+jobs:
+  hello:  # id of the job
+    runs-on: ubuntu-latest
+
+    steps:  # expects arrays
+      - name: Hello step
+        run: echo "Hello World"  # dash is part of array syntax
