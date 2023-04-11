@@ -1,3 +1,4 @@
+import cv2
 import cv2 as cv
 import numpy as np
 
@@ -57,3 +58,33 @@ def displayingTrackedSet(collectiveTitle, trackedSet, displayScale):
     '''
     for i in range(trackedSet.shape[0]):
         Display(collectiveTitle + ' ' + str(i), ConvertLabelledImageToBinary(trackedSet[i]), displayScale)
+
+def ExportImageWithContours(ori, pred): #, imagePath, exportPath):
+
+    # Convert image to colour
+    img = cv.cvtColor(ori, cv2.COLOR_GRAY2BGR)
+
+    # Get contours
+    contours, _ = cv.findContours(pred, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Draw contours on a copy of the image
+    back = img.copy()
+    cv.drawContours(back, contours, -1, (46, 204, 113), 2, cv2.LINE_AA)
+    alpha = 1
+
+    # Combine the images
+    return cv.addWeighted(img, 1-alpha, back, alpha, 0)
+    #
+    # exportDir = str(exportPath / 'contours-roundness-filtered' / (imagePath.stem + '.png'))
+    # exportDirUpdated = exportDir.replace("\\", "/")
+    # cv.imwrite(exportDirUpdated, result)
+
+
+if __name__ == '__main__':
+
+    rawImg = cv.imread("C:/Users/franz/Documents/OrganoTrackl/d1r1t0.tiff", cv2.IMREAD_GRAYSCALE)
+    predImg = cv.imread("C:/Users/franz/Documents/OrganoTrackl/d1r1t0.png", cv2.IMREAD_GRAYSCALE)
+    # # predImg = cv.imread("", cv2.IMREAD_GRAYSCALE)
+    # # _, predImg = cv.threshold(HarmonyImg, 50, 255, cv.THRESH_BINARY)
+    # DisplayWithContours('hello', rawImg, predImg, 0.5)
+    # cv.waitKey(0)

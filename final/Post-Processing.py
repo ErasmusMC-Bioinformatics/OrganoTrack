@@ -84,9 +84,11 @@ def SeparateOverlappingObjets(currentImage):
         Display('Final Result', dst, displayScale)
 
     # convert the input image to grayscale
-    gray = cv.cvtColor(dst, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(dst, cv.COLOR_BGR2GRAY)if __name__ == '__main__':
 
     # apply thresholding to convert grayscale to binary image
     _, thresh = cv.threshold(gray, 10, 255, 0)
     if displayState:
         Display('Final binary', thresh, displayScale)
+
+if __name__ == '__main__':
