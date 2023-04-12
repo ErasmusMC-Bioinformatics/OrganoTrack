@@ -30,5 +30,6 @@ class TestCalc(unittest.TestCase):
         with self.assertRaises(ValueError):  # using a context manager to test exceptions
             calc.divide(10, 0)
 
+
 if __name__ == '__main__':
     unittest.main()  # will run all tests
