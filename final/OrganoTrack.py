@@ -21,29 +21,22 @@ from itertools import chain
 
 
 
-def RunOrganoTrack(importData = False, importPath = None, exportPath = None, livePreview = False,
+def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
                    saveSeg = False, segmentOrgs = True, segmentedImagesPath = None,
                    filterOrgs = False, filterCriteria = None,
                    trackOrgs = False, timePoints = None, overlayTrack = False,
                    exportOrgMeasures = False, morphPropsToMeasure = None,
                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
 
-    # times = []
-    # tic = time.process_time()
-    if importData:
-        inputImages, imageNames = ReadImages(importPath)
-        # toc = time.process_time() - tic
-        # times.append(toc)
+    inputImages, imageNames = ReadImages(importPath)
 
-        plateLayout = ReadPlateLayout(importPath)
-        plateLayout = UpdatePlateLayoutWithImageNames(plateLayout, imageNames)
+    plateLayout = ReadPlateLayout(importPath)
+    plateLayout = UpdatePlateLayoutWithImageNames(plateLayout, imageNames)
 
     if segmentOrgs:
         # Segment
-        # tic = time.process_time()
         imagesInAnalysis = SegmentWithOrganoSegPy(inputImages, saveSeg, exportPath, imageNames)
-        # toc = time.process_time() - tic
-        # times.append(toc)
+
     else:
         # Load segmentations
         imagesInAnalysis, imageNames = ReadImages(segmentedImagesPath)
