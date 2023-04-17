@@ -1,0 +1,25 @@
+name: Run Tests
+
+on:
+  push:
+    branches:  # do the actions on these branches
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+
+jobs:
+  tests:  # id of the job
+    runs-on: ubuntu-latest
+
+    steps:  # steps arrays
+      - name: Checkout
+        uses: actions/checkout@v2 # most common action to checkout repo
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:           # specify node version
+          node-version: 16.18
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test

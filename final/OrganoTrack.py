@@ -22,7 +22,7 @@ from itertools import chain
 
 
 def RunOrganoTrack(importData = False, importPath = None, exportPath = None, livePreview = False,
-                   saveSeg = False, segmentOrgs = False, segmentedImagesPath = None,
+                   saveSeg = False, segmentOrgs = True, segmentedImagesPath = None,
                    filterOrgs = False, filterCriteria = None,
                    trackOrgs = False, timePoints = None, overlayTrack = False,
                    exportOrgMeasures = False, morphPropsToMeasure = None,
