@@ -184,7 +184,7 @@ def RunOrganoTrack(importData = False, importPath = None, exportPath = None, liv
 
     if trackOrgs:
         # Tracking
-        timelapseSets = [imagesInAnalysis[i * timePoints:(i + 1) * timePoints]
+        timelapseSets = [imagesInAnalysis[i * timePoints:(i + 1) * timePoints]  # thus, timelapse images are together
                          for i in range((len(imagesInAnalysis) + timePoints - 1) // timePoints )]
         # timelapseSets = [[imagesInAnalysis[0], imagesInAnalysis[1], imagesInAnalysis[2], imagesInAnalysis[3]]]
         # line above from https://www.geeksforgeeks.org/break-list-chunks-size-n-python/. Compare other methods
