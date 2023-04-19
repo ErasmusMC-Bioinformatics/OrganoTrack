@@ -26,7 +26,9 @@ def ExportImageStackMeasurements(outputPath, propertiesToMeasure, imageStacks, i
     '''
     :param outputPath: Complete path to the .xlsx file
     :param propertiesToMeasure: List of names of morphological properties that skimage.measure.regionprops returns
-    :param imageStacks: List of 3D arrays, time dim x 2D numpy array images. Image regions of interest are labelled
+    :param imageStacks: List of lists, each of which contains n 3D arrays (time dim x 2D numpy array images).
+            n is the number of fields of a well
+            Image regions of interest are labelled
     :param imageConditions: List of string-based experimental conditions of the corresponding images
     '''
     with pd.ExcelWriter(str(outputPath.absolute())) as writer:

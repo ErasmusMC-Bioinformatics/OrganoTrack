@@ -25,7 +25,7 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
                    saveSeg = False, segmentOrgs = True, segmentedImagesPath = None,
                    filterOrgs = False, filterCriteria = None,
                    trackOrgs = False, timePoints = None, overlayTrack = False,
-                   exportOrgMeasures = False, morphPropsToMeasure = None,
+                   exportOrgMeasures = False, numberOfWellFields = None, morphPropsToMeasure = None,
                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
 
     inputImages, imageNames = ReadImages(importPath)
@@ -179,6 +179,8 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
         # Tracking
         timelapseSets = [imagesInAnalysis[i * timePoints:(i + 1) * timePoints]  # thus, timelapse images are together
                          for i in range((len(imagesInAnalysis) + timePoints - 1) // timePoints )]
+        # list[0 * 4 : 1 * 4] grabs 0,1,2,3 images, ..., list[6*4 : 7*4] grabs 24,25,26,27 images
+        # range((28 + 4 - 1)//4) = range(7)
         # timelapseSets = [[imagesInAnalysis[0], imagesInAnalysis[1], imagesInAnalysis[2], imagesInAnalysis[3]]]
         # line above from https://www.geeksforgeeks.org/break-list-chunks-size-n-python/. Compare other methods
         # [ [time lapse set 1], [t0, t1, t2, t3], ..., [timelapse set n] ]
@@ -233,9 +235,11 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
         if trackOrgs:
             measuresFileName = 'trackedMeasures.xlsx'
             conditions = [" ".join(str(item) for item in alist) for alist in plateLayout[1][1:8]]
-            ExportImageStackMeasurements(exportPath / measuresFileName, morphPropsToMeasure, trackedSets, conditions)
+            exportStacks = [trackedSets[i * numberOfWellFields:(i + 1) * numberOfWellFields]
+                            for i in range((len(trackedSets) + numberOfWellFields - 1) // numberOfWellFields)]
+            ExportImageStackMeasurements(exportPath / measuresFileName, morphPropsToMeasure, exportStacks, conditions)
             print('h')
-    # return times
+
 
     if plotData:
         properties = ['area', 'roundness', 'eccentricity', 'solidity']
