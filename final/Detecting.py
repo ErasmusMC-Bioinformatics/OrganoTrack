@@ -6,6 +6,7 @@ import numpy as np
 from skimage.morphology import reconstruction
 from skimage.filters import threshold_otsu
 from Exporting import SaveData
+from Displaying import Display
 
 
 def imcomplement(img):
@@ -119,7 +120,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         img_sharp = cv.addWeighted(img, 1+weight, img_gauss, -weight, 0)  # Unsharp masking method
         toc = time.process_time() - tic
         times.append(toc)
-        # display('01', img_sharp, imageDisplayScale)
+        Display('01', img_sharp, imageDisplayScale)
 
         # Median blurring 0.014, 0.017, 0.007 s
         tic = time.process_time()
@@ -127,7 +128,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         img_blur = cv.medianBlur(img_sharp, median_kernel)
         toc = time.process_time() - tic
         times.append(toc)
-        # display('02', img_blur, imageDisplayScale)
+        Display('02', img_blur, imageDisplayScale)
 
         '''
             Opening
@@ -141,14 +142,14 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         img_eroded = cv.erode(img_blur, structuring_element)
         toc = time.process_time() - tic
         times.append(toc)
-        # display('03', img_eroded, imageDisplayScale)
+        Display('03', img_eroded, imageDisplayScale)
 
         # Reconstruct 3.022, 3.453, 2.159 s
         tic = time.process_time()
         img_reconstructed_1 = imreconstruct(img_eroded, img_blur, imgDataType)
         toc = time.process_time() - tic
         times.append(toc)
-        # display('04', img_reconstructed_1, imageDisplayScale)   # reconstructed
+        Display('04', img_reconstructed_1, imageDisplayScale)   # reconstructed
 
 
         '''
@@ -163,7 +164,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         img_smoothed = np.invert(img_reconstructed_2)
         toc = time.process_time() - tic
         times.append(toc)
-        # display('05', img_smoothed, imageDisplayScale)
+        Display('05', img_smoothed, imageDisplayScale)
 
         '''
             Adaptive thresholding
@@ -197,7 +198,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
 
         toc = time.process_time() - tic
         times.append(toc)
-        # display('06', adaptiveSum, imageDisplayScale)
+        Display('06', adaptiveSum, imageDisplayScale)
 
         '''
             Removing small noise
@@ -231,7 +232,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
 
         toc = time.process_time() - tic
         times.append(toc)
-        # display('07', im_result, imageDisplayScale)
+        Display('07', im_result, imageDisplayScale)
 
         '''
             Smoothen
@@ -242,7 +243,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         binary = cv.morphologyEx(im_result, cv.MORPH_CLOSE, kernel)
         toc = time.process_time() - tic
         times.append(toc)
-        # display('08 smoothed', binary, imageDisplayScale)
+        Display('08 smoothed', binary, imageDisplayScale)
 
         '''
             Removing boundary objects
@@ -278,7 +279,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
 
         toc = time.process_time() - tic
         times.append(toc)
-        # # display('09 removed boundary', binary, imageDisplayScale)
+        Display('09 removed boundary', binary, imageDisplayScale)
 
         '''
             Filling holes
@@ -318,7 +319,7 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         toc = time.process_time() - tic
         times.append(toc)
         # print(times)
-        # display('10 filled', filled_binary, imageDisplayScale)  # rethreshold this one
+        Display('10 filled', filled_binary, imageDisplayScale)  # rethreshold this one
         segmentedImages.append(filled_binary)
 
         if saveSegmentation:
