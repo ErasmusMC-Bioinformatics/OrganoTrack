@@ -13,18 +13,26 @@ def SaveOverlay(overlay, exportPath, imagePath):
     cv.imwrite(str(exportPath / imagePath.name), overlay)
 
 # EMC dataset
-# set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
-# set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
-# exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
-# set1_pred_Dir = exportPath / 'segmented'
-# datasetName = 'EMC'
+set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
+set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
+exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
+set1_pred_Dir = exportPath / 'segmented'
+datasetName = 'EMC'
 
 # OrganoID Gemcitabine dataset
-set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/groundTruth')
-set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original')
-exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/export')
-set1_pred_Dir = exportPath / 'segmented'
-datasetName = 'OrganoID OriginalData'
+# set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/groundTruth')
+# set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original')
+# exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/export')
+# set1_pred_Dir = exportPath / 'segmented'
+# datasetName = 'OrganoID-OriginalData'
+
+# # OrganoID MouseOrganoids dataset
+# set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/GroundTruth')
+# set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')
+# exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')
+# set1_pred_Dir = exportPath / 'segmented'
+# datasetName = 'OrganoID-MouseOrganoids'
+
 
 
 # GT images
@@ -57,7 +65,7 @@ for i in range(len(imageNames)):
 
 df = pd.DataFrame(segmentationScores, index=indexNames, columns=['f1', 'iou', 'dice'])
 
-outputPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictionsdata.xlsx')
+outputPath = exportPath / ('OrganoTrack-seg-scores-'+datasetName+'.xlsx')
 
 with pd.ExcelWriter(str(outputPath.absolute())) as writer:
     df.to_excel(writer, sheet_name=datasetName, startrow=1)
