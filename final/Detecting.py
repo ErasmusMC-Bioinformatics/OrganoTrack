@@ -232,9 +232,12 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
     if saveSegmentation:
         # Make segmentation export path
         dateTimeNow = datetime.now()
-        segmentedExportPath = exportPath / ('segmented-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S'))
-        os.mkdir(segmentedExportPath)
+        segmentedExportPath = exportPath / 'segmented' # + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S'))
+        if not os.path.exists(segmentedExportPath):
+            os.mkdir(segmentedExportPath)
+            os.mkdir(segmentedExportPath / 'images')
 
+    segmentedExportPath = segmentedExportPath / 'images'
     for count, img in enumerate(images):
 
         imgDataType = img.dtype  # image.dtype = the bitsize of the image, e.g. uint8 (0 - 255) or uint16 (0 65535)
@@ -261,7 +264,9 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
 
         segmentedImages.append(filled_binary)
 
+
         if saveSegmentation:
+
             cv.imwrite(str(segmentedExportPath / imagePaths[count].name), filled_binary)
 
     return segmentedImages
@@ -279,7 +284,7 @@ def BinariseTo1(predictionImage, groundTruthImage):
 
     return predictionBinary_1, groundTruthBinary_1
 
-def Evaluate(predictionImage, groundTruthImage, saveImageOverlay):
+def Evaluate(predictionImage, groundTruthImage): #, saveImageOverlay):
 
     predictionBinary_1, groundTruthBinary_1 = BinariseTo1(predictionImage, groundTruthImage)
 
@@ -296,10 +301,10 @@ def Evaluate(predictionImage, groundTruthImage, saveImageOverlay):
     falseNegativeCount = np.count_nonzero(falseNegativeImage == 1)
 
     # Calculate scores
-    f1Score = 2 * truePositiveCount / (2 * truePositiveCount + falsePositiveCount + falseNegativeCount)
-    iouScore = truePositiveCount/np.count_nonzero(orImage == 1)
-    diceScore = 2*truePositiveCount/(np.count_nonzero(predictionBinary_1 == 1) + np.count_nonzero(groundTruthBinary_1 == 1))
-
+    f1Score = 100*2 * truePositiveCount / (2 * truePositiveCount + falsePositiveCount + falseNegativeCount)
+    iouScore = 100*truePositiveCount/np.count_nonzero(orImage == 1)
+    diceScore = 100*2*truePositiveCount/(np.count_nonzero(predictionBinary_1 == 1) + np.count_nonzero(groundTruthBinary_1 == 1))
+    scores = np.array([f1Score, iouScore, diceScore])
     # Convert ground truth image to RGB green
     groundTruthRGB = cv.cvtColor(groundTruthImage, cv.COLOR_GRAY2RGB)
     _, groundTruthRGB = cv.threshold(groundTruthRGB, 50, 255, cv.THRESH_BINARY)
@@ -308,17 +313,13 @@ def Evaluate(predictionImage, groundTruthImage, saveImageOverlay):
     # Convert prediction image to RGB
     predictionRGB = cv.cvtColor(predictionImage, cv.COLOR_GRAY2RGB)
 
-    if saveImageOverlay[0]:
-        alpha = 0.5
-        beta = 1 - alpha
-        beta = 1 - alpha
-        dst = cv.addWeighted(predictionRGB, alpha, groundTruthRGB, beta, 0.0)
-        dateTimeNow = datetime.now()
-        segmentedExportPath = saveImageOverlay[1] / ('overlay-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S'))
-        os.mkdir(segmentedExportPath)
-        cv.imwrite(str(segmentedExportPath / saveImageOverlay[2].name), dst)
+    # Generating overlay
+    alpha = 0.5
+    beta = 1 - alpha
+    overlay = cv.addWeighted(predictionRGB, alpha, groundTruthRGB, beta, 0.0)
 
-    return [f1Score, iouScore, diceScore]
+
+    return scores, overlay
 
 def Test_SegmentWithOrganoSegPy():
     # Import
@@ -349,9 +350,11 @@ def Test_Evaluate():
     predImagePath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/segmented-10.05.2023-15_03_26/d0r1t0.tiff')
     saveImgOverlay = [True, exportPath, predImagePath]
 
-    scores = Evaluate(predImage, groundTruthImage, saveImgOverlay)
+    scores, overlay = Evaluate(predImage, groundTruthImage)
 
     print(scores)
+    Display('overlay', overlay, 0.5)
+    cv.waitKey(0)
 
 if __name__ == '__main__':
     Test_Evaluate()
