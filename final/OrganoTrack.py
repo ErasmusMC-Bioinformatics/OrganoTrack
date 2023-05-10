@@ -22,6 +22,7 @@ from itertools import chain
 
 
 def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
+                   segParams = None, saveSegParams = None,
                    saveSeg = False, segmentOrgs = True, segmentedImagesPath = None,
                    filterOrgs = False, filterCriteria = None,
                    trackOrgs = False, timePoints = None, overlayTrack = False,
@@ -35,7 +36,7 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
 
     if segmentOrgs:
         # Segment
-        imagesInAnalysis = SegmentWithOrganoSegPy(inputImages, saveSeg, exportPath, imageNames)
+        imagesInAnalysis = SegmentWithOrganoSegPy(inputImages, segParams, saveSegParams)
 
     else:
         # Load segmentations

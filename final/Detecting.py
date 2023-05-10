@@ -63,7 +63,7 @@ def imreconstruct(marker, mask, imDataType):
 
     return (reconstruction(marker, mask)).astype(imDataType)  # reconstruction returns float64. Convert to e.g. uint8
 
-def CallAdaptiveThreshold(image, imgDataType):
+def CallAdaptiveThreshold(image, imgDataType, fudgeFactor, maxWindowSize):
     # # OpenCV method
     # adaptiveSum = np.zeros((np.shape(img)[0], np.shape(img)[1]))
     # for j in range(20, 251, 10):
@@ -72,38 +72,26 @@ def CallAdaptiveThreshold(image, imgDataType):
 
     # adaptive thresholding 16.824, 16.448, 14.636 s
     adaptiveSum = np.zeros(image.shape, dtype=imgDataType)
-    fudgeFactor = 0.5
 
-    for windowSize in range(20, 251, 10):
-        adaptiveIter = adaptiveThreshold(image, windowSize, fudgeFactor, imgDataType)
+    minWindowSize = 20
+    for windowSize in range(minWindowSize, maxWindowSize+1, 10):
+        adaptiveIter = AdaptiveThreshold(image, windowSize, fudgeFactor, imgDataType)
         adaptiveSum = np.add(adaptiveSum, adaptiveIter)
 
     return adaptiveSum
 
 
-def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
+def AdaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
 
-    # print("\n")
-    # print(windowSize)
-    tic = time.process_time()
     # 1 ) already a grayscale image
-    # print(img)
     img_double = mat2gray(img)
-    toc = time.process_time() - tic
-    # print("mat2gray: " + str(toc))
-    # print(img_double)
-    # print(np.shape(img_double))
 
     # 2 ) imfilter
-    tic = time.process_time()
     if mode == 'mean':
         kernel = np.ones((windowSize, windowSize), dtype=np.float32)
         kernel /= windowSize**2
         convolved = cv.filter2D(img_double, -1, kernel)  # execute correlation. Returns np.float64
-    toc = time.process_time() - tic
-    # print("filter: " + str(toc))
-    # print(convolved)
-    # print(np.shape(convolved))
+
 
         # convolved = cv.blur(img, (windowSize, windowSize))
     # elif mode == 'median':
@@ -112,28 +100,22 @@ def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
     #     convolved = cv.GaussianBlur(img, (windowSize, windowSize), 0)
 
     # 3 )           - correct element wise subtraction
-    tic = time.process_time()
     subtract = np.subtract(convolved, img_double)
-    toc = time.process_time() - tic
-    # print("sub: " + str(toc))
+
     #
     # 4 ) Calculates Otsu's threshold for each element
-    tic = time.process_time()
     otsu = threshold_otsu(subtract)
-    toc = time.process_time() - tic
+
     # print("otsu: " + str(toc))
     # # _, otsu = cv.threshold(substract, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
     # print(otsu)
-    #
+
     # 5 ) thresholding  with otsu
-    tic = time.process_time()
     imDataInfo = np.iinfo(imDataType)
     final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(np.uint8)  # typecast to uint8 to save memory
     # final, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
-    # print(np.shape(final))
-    # print(type(final[0][0]))
-    toc = time.process_time() - tic
-    # print("final: " + str(toc))
+
+
     return final
 
 
@@ -141,7 +123,7 @@ def mat2gray(img):
     return (img-np.amin(img))/(np.amax(img)-np.amin(img))
 
 
-def RemoveSmallNoise(image):
+def RemoveSmallNoise(image, minObjectSize):
     # 0.370, 0.243, 0.438 s
     # code from https://stackoverflow.com/questions/42798659/how-to-remove-small-connected-objects-using-opencv
 
@@ -158,13 +140,13 @@ def RemoveSmallNoise(image):
 
     # minimum size of particles we want to keep (number of pixels).
     # here, it's a fixed value, but you can set it as you want, eg the mean of the sizes or whatever.
-    min_size = 150
+    minObjectSize = 150
 
     # output image with only the kept components
     im_result = np.zeros_like(im_with_separated_blobs, dtype=np.uint8)
     # for every component in the image, keep it only if it's above min_size
     for blob in range(nb_blobs):
-        if sizes[blob] >= min_size:
+        if sizes[blob] >= minObjectSize:
             # see description of im_with_separated_blobs above
             im_result[im_with_separated_blobs == blob + 1] = 255
 
@@ -238,8 +220,14 @@ def FillHoles(image):
     return filled_binary
 
 
-def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
+def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParameters):
+    fudgeFactor, maxWindowSize, minObjectSize = segmentationParameters[0], \
+                                                segmentationParameters[1], \
+                                                segmentationParameters[2]
 
+    saveSegmentation, exportPath, imagePaths = saveSegmentationParameters[0],\
+                                               saveSegmentationParameters[1], \
+                                               saveSegmentationParameters[2]
 
     segmentedImages = []
 
@@ -261,9 +249,9 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
 
         img_smoothed = OpenAndClose(img_blur, imgDataType)
 
-        adaptiveSum = CallAdaptiveThreshold(img_smoothed, imgDataType)
+        adaptiveSum = CallAdaptiveThreshold(img_smoothed, imgDataType, fudgeFactor, maxWindowSize)
 
-        im_result = RemoveSmallNoise(adaptiveSum)
+        im_result = RemoveSmallNoise(adaptiveSum, minObjectSize)
 
         # Smoothen, 0.0139, 0.0163, 0.004 s
         kernel = np.ones((3, 3), np.uint16)
@@ -280,18 +268,22 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
 
     return segmentedImages
 
+
 if __name__ == '__main__':
     # Import
     dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/improving-segmentation/input')
     exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/improving-segmentation/output')
 
     # Segmentation
+
     saveSegmentations = True
     segmentedPaths = Path(
         '/home/franz/Documents/mep/data/for-creating-OrganoTrack/improving-segmentation/output/segmented')
 
     # Executing segmentation
     inputImages, imageNames = ReadImages(dataPath)
-    imagesInAnalysis = SegmentWithOrganoSegPy(inputImages, saveSegmentations, exportPath, imageNames)
+    saveSegParams = [True, exportPath, imageNames]
+    segmentationParams = [0.5, 250, 150]   #fudgeFactor, maxWindowSize, minObjectSize
+    imagesInAnalysis = SegmentWithOrganoSegPy(inputImages, segmentationParams, saveSegParams)
     cv.waitKey(0)
     print('segmentation')
