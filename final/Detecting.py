@@ -170,6 +170,74 @@ def RemoveSmallNoise(image):
 
     return im_result
 
+def RemoveBoundaryObjects(image):
+    # 0.0276, 0.0149, 0.016 s
+    # Find contours in the binary image
+    contours, _ = cv.findContours(image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+    # # This code visualises the contours found
+    # h, w = binary.shape[:2]
+    # blank = np.zeros((h, w), np.uint8)
+    # maxLength = len(contours[0])
+    # maxIndex = 0
+    # for j in range(len(contours)):
+    #     if len(contours[j]) > maxLength:
+    #         maxLength = len(contours[j])
+    #         maxIndex = j
+    #     for i in range(len(contours[j])):
+    #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
+    # print(maxIndex)  # 632
+    # display('removed', blank, 0.5)
+
+    # Iterate over the contours and remove the ones that are partially in the image
+    for contour in contours:
+        x, y, w, h = cv.boundingRect(contour)
+        # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
+
+        if x == 0 or y == 0 or x + w == image.shape[1] or y + h == image.shape[0]:
+            # Contour is partially in the image, remove it
+            cv.drawContours(image, [contour], contourIdx=-1, color=0, thickness=-1)
+            # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
+    return image
+
+
+def FillHoles(image):
+    # 8.575, 9.611, 8.633 s
+
+    inversed = np.invert(image)
+    # display('inversed', inversed, 0.5)
+
+    # Find the contours of the binary image
+    contours, _ = cv.findContours(inversed, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)  # 1 contour found
+    h, w = inversed.shape[:2]
+    marker_image = np.zeros((h, w), np.uint8)
+    for j in range(len(contours)):
+        for i in range(len(contours[j])):
+            marker_image[contours[j][i][0][1], contours[j][i][0][0]] = 255
+    # display('seed image', marker_image, 0.5)
+
+    equal = False
+    se_size = 3  # Structuring element size
+    se_shape = cv.MORPH_RECT  # Structuring element shape
+    structuring_element = cv.getStructuringElement(se_shape, (se_size, se_size))
+    oldImage = marker_image
+    blank = np.zeros((h, w), np.uint8)
+    while not equal:
+
+        newImage = cv.bitwise_and(cv.dilate(oldImage, structuring_element), inversed)
+        difference = np.subtract(newImage, oldImage)
+        if np.array_equal(difference, blank):
+            equal = True
+            print('True')
+        else:
+            oldImage = newImage
+
+    filled = np.invert(newImage)
+    _, filled_binary = cv.threshold(filled, 50, 255, cv.THRESH_BINARY)\
+
+    return filled_binary
+
+
 def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
 
 
@@ -189,103 +257,21 @@ def SegmentWithOrganoSegPy(images, saveSegmentation, exportPath, imagePaths):
         if img.shape == 3:
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-        '''
-            Smoothening
-        '''
         img_blur = Smoothen(img)
 
-        '''
-            Opening & Closing
-        '''
         img_smoothed = OpenAndClose(img_blur, imgDataType)
 
-        '''
-            Adaptive thresholding
-        '''
         adaptiveSum = CallAdaptiveThreshold(img_smoothed, imgDataType)
 
-
-        '''
-            Removing small noise
-        '''
         im_result = RemoveSmallNoise(adaptiveSum)
 
-        '''
-            Smoothen
-        '''
-        # 0.0139, 0.0163, 0.004 s
-
+        # Smoothen, 0.0139, 0.0163, 0.004 s
         kernel = np.ones((3, 3), np.uint16)
         binary = cv.morphologyEx(im_result, cv.MORPH_CLOSE, kernel)
 
-        '''
-            Removing boundary objects
-        '''
-        # 0.0276, 0.0149, 0.016 s
-        # Find contours in the binary image
-        contours, _ = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        binary = RemoveBoundaryObjects(binary)
 
-        # # This code visualises the contours found
-        # h, w = binary.shape[:2]
-        # blank = np.zeros((h, w), np.uint8)
-        # maxLength = len(contours[0])
-        # maxIndex = 0
-        # for j in range(len(contours)):
-        #     if len(contours[j]) > maxLength:
-        #         maxLength = len(contours[j])
-        #         maxIndex = j
-        #     for i in range(len(contours[j])):
-        #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
-        # print(maxIndex)  # 632
-        # display('removed', blank, 0.5)
-
-        # Iterate over the contours and remove the ones that are partially in the image
-        for contour in contours:
-            x, y, w, h = cv.boundingRect(contour)
-            # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
-
-            if x == 0 or y == 0 or x+w == img.shape[1] or y+h == img.shape[0]:
-                # Contour is partially in the image, remove it
-                cv.drawContours(binary, [contour], contourIdx=-1, color=0, thickness=-1)
-                # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
-
-
-        '''
-            Filling holes
-        '''
-        # 8.575, 9.611, 8.633 s
-
-        inversed = np.invert(binary)
-        # display('inversed', inversed, 0.5)
-
-        # Find the contours of the binary image
-        contours, _ = cv.findContours(inversed, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)  # 1 contour found
-        h, w = inversed.shape[:2]
-        marker_image = np.zeros((h, w), np.uint8)
-        for j in range(len(contours)):
-            for i in range(len(contours[j])):
-                marker_image[contours[j][i][0][1], contours[j][i][0][0]] = 255
-        # display('seed image', marker_image, 0.5)
-
-        equal = False
-        se_size = 3                     # Structuring element size
-        se_shape = cv.MORPH_RECT     # Structuring element shape
-        structuring_element = cv.getStructuringElement(se_shape, (se_size, se_size))
-        oldImage = marker_image
-        blank = np.zeros((h, w), np.uint8)
-        while not equal:
-
-            newImage = cv.bitwise_and(cv.dilate(oldImage, structuring_element), inversed)
-            difference = np.subtract(newImage, oldImage)
-            if np.array_equal(difference, blank):
-                equal = True
-                print('True')
-            else:
-                oldImage = newImage
-
-        filled = np.invert(newImage)
-        _,filled_binary = cv.threshold(filled,50,255,cv.THRESH_BINARY)
-
+        filled_binary = FillHoles(binary)
 
         segmentedImages.append(filled_binary)
 
