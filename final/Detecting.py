@@ -118,10 +118,8 @@ def AdaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
 
     return final
 
-
 def mat2gray(img):
     return (img-np.amin(img))/(np.amax(img)-np.amin(img))
-
 
 def RemoveSmallNoise(image, minObjectSize):
     # 0.370, 0.243, 0.438 s
@@ -268,6 +266,40 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
 
     return segmentedImages
 
+
+def BinariseTo1(predictionImage, groundTruthImage):
+
+    predictionGrayscale = cv.cvtColor(predictionImage, cv.COLOR_GRAY2BGR)
+    _, predictionBinary_255 = cv.threshold(predictionGrayscale, 10, 255, cv.THRESH_BINARY)
+    predictionBinary_1 = predictionBinary_255 / 255
+
+    groundTruthGrayscale = cv.cvtColor(groundTruthImage, cv.COLOR_GRAY2BGR)
+    _, groundTruthBinary_255 = cv.threshold(groundTruthGrayscale, 10, 255, cv.THRESH_BINARY)
+    groundTruthBinary_1 = groundTruthBinary_255 / 255
+
+    return predictionBinary_1, groundTruthBinary_1
+
+def Evaluate(predictionImage, groundTruthImage): #, exportImageOverlays):
+
+    predictionBinary_1, groundTruthBinary_1 = BinariseTo1(predictionImage, groundTruthImage)
+
+    # Count true positives, false positives and false negatives
+    sumImage = cv.add(predictionBinary_1, groundTruthBinary_1)  # 0 or 1 or 2
+    truePositiveCount = np.count_nonzero(sumImage == 2)
+
+    orImage = cv.bitwise_or(predictionBinary_1, groundTruthBinary_1)  # 0 or 1, not 2
+
+    falsePositiveImage = cv.subtract(orImage, groundTruthBinary_1)  # 0 or 1, not 2
+
+    falseNegativeImage = cv.subtract(orImage, predictionBinary_1)  # 0 or 1, not 2
+    falseNegativeCount = np.count_nonzero(falseNegativeImage == 1)
+
+    # Calculate scores
+    f1Score = 2 * truePositiveCount / (2 * truePositiveCount + falsePositiveImage + falseNegativeCount)
+    iouScore = truePositiveCount/np.count_nonzero(orImage == 1)
+    diceScore = 2*truePositiveCount/(np.count_nonzero(predictionBinary_1 == 1) + np.count_nonzero(groundTruthBinary_1 == 1))
+
+    return f1Score, iouScore, diceScore
 
 if __name__ == '__main__':
     # Import
