@@ -326,7 +326,6 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
         print('ploting')
 
 
-
 if __name__ == '__main__':
     segmented = True
 
@@ -419,6 +418,5 @@ if __name__ == '__main__':
 
 
         # displayingTrackedSet('tracked', trackedSet, 0.5)
-
 
     cv.waitKey(0)
