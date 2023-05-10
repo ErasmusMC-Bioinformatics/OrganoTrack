@@ -279,7 +279,7 @@ def BinariseTo1(predictionImage, groundTruthImage):
 
     return predictionBinary_1, groundTruthBinary_1
 
-def Evaluate(predictionImage, groundTruthImage): #, exportImageOverlays):
+def Evaluate(predictionImage, groundTruthImage, saveImageOverlay):
 
     predictionBinary_1, groundTruthBinary_1 = BinariseTo1(predictionImage, groundTruthImage)
 
@@ -299,6 +299,24 @@ def Evaluate(predictionImage, groundTruthImage): #, exportImageOverlays):
     f1Score = 2 * truePositiveCount / (2 * truePositiveCount + falsePositiveCount + falseNegativeCount)
     iouScore = truePositiveCount/np.count_nonzero(orImage == 1)
     diceScore = 2*truePositiveCount/(np.count_nonzero(predictionBinary_1 == 1) + np.count_nonzero(groundTruthBinary_1 == 1))
+
+    # Convert ground truth image to RGB green
+    groundTruthRGB = cv.cvtColor(groundTruthImage, cv.COLOR_GRAY2RGB)
+    _, groundTruthRGB = cv.threshold(groundTruthRGB, 50, 255, cv.THRESH_BINARY)
+    groundTruthRGB[np.all(groundTruthRGB == (255, 255, 255), axis=-1)] = (0, 255, 0)
+
+    # Convert prediction image to RGB
+    predictionRGB = cv.cvtColor(predictionImage, cv.COLOR_GRAY2RGB)
+
+    if saveImageOverlay[0]:
+        alpha = 0.5
+        beta = 1 - alpha
+        beta = 1 - alpha
+        dst = cv.addWeighted(predictionRGB, alpha, groundTruthRGB, beta, 0.0)
+        dateTimeNow = datetime.now()
+        segmentedExportPath = saveImageOverlay[1] / ('overlay-' + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S'))
+        os.mkdir(segmentedExportPath)
+        cv.imwrite(str(segmentedExportPath / saveImageOverlay[2].name), dst)
 
     return [f1Score, iouScore, diceScore]
 
@@ -327,7 +345,12 @@ def Test_Evaluate():
     predImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/segmented-10.05.2023-15_03_26/d0r1t0.tiff'
     predImage = cv.imread(predImageDir, cv.IMREAD_GRAYSCALE)
 
-    scores = Evaluate(predImage, groundTruthImage)
+    exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
+    predImagePath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/segmented-10.05.2023-15_03_26/d0r1t0.tiff')
+    saveImgOverlay = [True, exportPath, predImagePath]
+
+    scores = Evaluate(predImage, groundTruthImage, saveImgOverlay)
+
     print(scores)
 
 if __name__ == '__main__':

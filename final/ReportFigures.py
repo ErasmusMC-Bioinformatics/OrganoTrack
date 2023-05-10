@@ -24,11 +24,14 @@ predictionImages = SegmentWithOrganoSegPy(oriImages, segParams, saveSegParams)
 # DisplayImages('prediction', predictionImages, 0.5)
 # cv.waitKey(0)
 
+# Image Overlay
+saveImgOverlay = [True, exportPath, None]
+
 segmentationScores = np.zeros((len(predictionImages), 3))
 
 for i, (prediction, groundTruth) in enumerate(zip(predictionImages, groundTruthImages)):
-    Evaluate(prediction, groundTruth)
-    segmentationScores[i] = np.asarray(Evaluate(prediction, groundTruth))
+    saveImgOverlay[2] = oriImageNames[i]
+    segmentationScores[i] = np.asarray(Evaluate(prediction, groundTruth, saveImgOverlay))
 
 #has both GT and ori
 
