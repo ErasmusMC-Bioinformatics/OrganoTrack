@@ -290,32 +290,45 @@ def Evaluate(predictionImage, groundTruthImage): #, exportImageOverlays):
     orImage = cv.bitwise_or(predictionBinary_1, groundTruthBinary_1)  # 0 or 1, not 2
 
     falsePositiveImage = cv.subtract(orImage, groundTruthBinary_1)  # 0 or 1, not 2
+    falsePositiveCount = np.count_nonzero(falsePositiveImage == 1)
 
     falseNegativeImage = cv.subtract(orImage, predictionBinary_1)  # 0 or 1, not 2
     falseNegativeCount = np.count_nonzero(falseNegativeImage == 1)
 
     # Calculate scores
-    f1Score = 2 * truePositiveCount / (2 * truePositiveCount + falsePositiveImage + falseNegativeCount)
+    f1Score = 2 * truePositiveCount / (2 * truePositiveCount + falsePositiveCount + falseNegativeCount)
     iouScore = truePositiveCount/np.count_nonzero(orImage == 1)
     diceScore = 2*truePositiveCount/(np.count_nonzero(predictionBinary_1 == 1) + np.count_nonzero(groundTruthBinary_1 == 1))
 
-    return f1Score, iouScore, diceScore
+    return [f1Score, iouScore, diceScore]
 
-if __name__ == '__main__':
+def Test_SegmentWithOrganoSegPy():
     # Import
     dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/improving-segmentation/input')
     exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/improving-segmentation/output')
 
     # Segmentation
-
     saveSegmentations = True
     segmentedPaths = Path(
         '/home/franz/Documents/mep/data/for-creating-OrganoTrack/improving-segmentation/output/segmented')
 
     # Executing segmentation
     inputImages, imageNames = ReadImages(dataPath)
-    saveSegParams = [True, exportPath, imageNames]
-    segmentationParams = [0.5, 250, 150]   #fudgeFactor, maxWindowSize, minObjectSize
+    saveSegParams = [saveSegmentations, segmentedPaths, imageNames]
+    segmentationParams = [0.5, 250, 150]  # fudgeFactor, maxWindowSize, minObjectSize
     imagesInAnalysis = SegmentWithOrganoSegPy(inputImages, segmentationParams, saveSegParams)
     cv.waitKey(0)
     print('segmentation')
+
+def Test_Evaluate():
+    gtImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations/images/d0r1t0_GT.png'
+    groundTruthImage = cv.imread(gtImageDir, cv.IMREAD_GRAYSCALE)
+
+    predImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/segmented-10.05.2023-15_03_26/d0r1t0.tiff'
+    predImage = cv.imread(predImageDir, cv.IMREAD_GRAYSCALE)
+
+    scores = Evaluate(predImage, groundTruthImage)
+    print(scores)
+
+if __name__ == '__main__':
+    Test_Evaluate()
