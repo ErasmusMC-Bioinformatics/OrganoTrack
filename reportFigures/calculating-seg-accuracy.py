@@ -12,21 +12,30 @@ import pandas as pd
 def SaveOverlay(overlay, exportPath, imagePath):
     cv.imwrite(str(exportPath / imagePath.name), overlay)
 
-# EMC dataset
+# EMC dataset - segmented by OrganoTrack
+# set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
+# set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
+# exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
+# set1_pred_Dir = exportPath / 'segmented'
+# segmenter = 'OrganoTrack'
+# datasetName = 'EMC'
+
+# EMC dataset - segmented by OrganoID
 set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
 set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
 exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
-set1_pred_Dir = exportPath / 'segmented'
+set1_pred_Dir = exportPath / 'OrganoID_segmented'
+segmenter = 'OrganoID'
 datasetName = 'EMC'
 
-# OrganoID Gemcitabine dataset
+# OrganoID Gemcitabine dataset - segmented by OrganoTrack
 # set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/groundTruth')
 # set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original')
 # exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/export')
 # set1_pred_Dir = exportPath / 'segmented'
 # datasetName = 'OrganoID-OriginalData'
 
-# # OrganoID MouseOrganoids dataset
+# # OrganoID MouseOrganoids dataset - segmented by OrganoTrack
 # set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/GroundTruth')
 # set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')
 # exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')
@@ -34,12 +43,11 @@ datasetName = 'EMC'
 # datasetName = 'OrganoID-MouseOrganoids'
 
 
-
 # GT images
 groundTruthImages, _ = ReadImages(set1_GT_Dir)
 
 
-if not os.path.exists(set1_pred_Dir):
+if not os.path.exists(set1_pred_Dir) and segmenter == 'OrganoTrack':
     oriImages, imageNames = ReadImages(set1_ori_Dir)
     segParams = [0.5, 250, 150]
     saveSegParams = [True, exportPath, imageNames]
@@ -50,7 +58,7 @@ else:
 
 segmentationScores = np.zeros((len(predictionImages), 3))
 
-overlayExportPath = exportPath / 'overlay'
+overlayExportPath = exportPath / (segmenter+'overlay')
 if not os.path.exists(overlayExportPath):
     os.mkdir(overlayExportPath)
 
@@ -65,7 +73,7 @@ for i in range(len(imageNames)):
 
 df = pd.DataFrame(segmentationScores, index=indexNames, columns=['f1', 'iou', 'dice'])
 
-outputPath = exportPath / ('OrganoTrack-seg-scores-'+datasetName+'.xlsx')
+outputPath = exportPath / (segmenter+'-seg-scores-'+datasetName+'.xlsx')
 
 with pd.ExcelWriter(str(outputPath.absolute())) as writer:
     df.to_excel(writer, sheet_name=datasetName, startrow=1)
