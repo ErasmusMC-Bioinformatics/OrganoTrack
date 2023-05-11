@@ -1,9 +1,9 @@
 from pathlib import Path
-from Detecting import Evaluate
+from final.Detecting import Evaluate
 import numpy as np
-from Importing import ReadImages
-from Detecting import SegmentWithOrganoSegPy
-from Displaying import DisplayImages
+from final.Importing import ReadImages
+from final.Detecting import SegmentWithOrganoSegPy
+from final.Displaying import DisplayImages
 import cv2 as cv
 from datetime import datetime
 import os
