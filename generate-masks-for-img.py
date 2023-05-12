@@ -58,17 +58,17 @@ print('Original image shown')
 # model_type_h = "vit_h"
 #
 # print('generating mask - model H')
-# tic_H = time.process_time()
+# tic_H = time.time()
 # sam = sam_model_registry[model_type_h](checkpoint=sam_checkpoint_h)
 # mask_generator = SamAutomaticMaskGenerator(sam)
-# masks_H = mask_generator.generate(img)
-# toc_H = time.process_time() - tic_H
+# masks = mask_generator.generate(img)
+# toc_H = time.time() - tic_H
 # print('Time elapsed with model H (s): ', toc_H)
 #
 # # Show segmented image
 # plt.figure(figsize=(20,20))
 # plt.imshow(img)
-# show_anns(masks_H)
+# show_anns(masks)
 # plt.axis('off')
 # plt.show()
 # print('Model H figure shown')
@@ -76,59 +76,59 @@ print('Original image shown')
 
 
 
-'''
-    Generating masks with Model B
-'''
-sam_checkpoint_b = "sam_vit_b_01ec64.pth"
-model_type_b = "vit_b"
+# '''
+#     Generating masks with Model B
+# '''
+# sam_checkpoint_b = "sam_vit_b_01ec64.pth"
+# model_type_b = "vit_b"
+#
+# print('generating mask - model B')
+# tic_B = time.process_time()
+# sam = sam_model_registry[model_type_b](checkpoint=sam_checkpoint_b)
+# mask_generator = SamAutomaticMaskGenerator(sam)
+# masks = mask_generator.generate(img)
+# toc_B = time.process_time() - tic_B
+# print('Time elapsed with model B (s): ', toc_B)
+#
+# # Show segmented image
+# plt.figure(figsize=(20,20))
+# plt.imshow(img)
+# show_anns(masks)
+# plt.axis('off')
+# plt.show()
+# print('Model B figure shown')
 
-print('generating mask - model B')
-tic_B = time.process_time()
-sam = sam_model_registry[model_type_b](checkpoint=sam_checkpoint_b)
+
+'''
+    Generating masks with Model L
+'''
+sam_checkpoint_l = "sam_vit_l_0b3195.pth"
+model_type_l = "vit_l"
+
+print('generating mask - model L')
+tic_L = time.time()
+sam = sam_model_registry[model_type_l](checkpoint=sam_checkpoint_l)
 mask_generator = SamAutomaticMaskGenerator(sam)
-masks_B = mask_generator.generate(img)
-toc_B = time.process_time() - tic_B
-print('Time elapsed with model B (s): ', toc_B)
+masks = mask_generator.generate(img)
+toc_L = time.time() - tic_L
+print('Time elapsed with model L (s): ', toc_L)
 
 # Show segmented image
 plt.figure(figsize=(20,20))
 plt.imshow(img)
-show_anns(masks_B)
+show_anns(masks)
 plt.axis('off')
 plt.show()
-print('Model B figure shown')
+print('Model L figure shown')
 
-sam_output = [masks_B[x]['segmentation'] for x in range(len(masks_B))]
+
+sam_output = [masks[x]['segmentation'] for x in range(len(masks))]
 sum_sam_output = sum(sam_output)
 m2 = np.zeros(np.max(sum_sam_output) + 1)
 m2[2:] = 1
 binary_sam_output = m2[sum_sam_output]
 cv.imshow('sam output', binary_sam_output)
 cv.waitKey(0)
-
-
-
-# '''
-#     Generating masks with Model L
-# '''
-# sam_checkpoint_l = "sam_vit_l_0b3195.pth"
-# model_type_l = "vit_l"
-#
-# print('generating mask - model L')
-# tic_L = time.process_time()
-# sam = sam_model_registry[model_type_l](checkpoint=sam_checkpoint_l)
-# mask_generator = SamAutomaticMaskGenerator(sam)
-# masks_L = mask_generator.generate(img)
-# toc_L = time.process_time() - tic_L
-# print('Time elapsed with model L (s): ', toc_L)
-#
-# # Show segmented image
-# plt.figure(figsize=(20,20))
-# plt.imshow(img)
-# show_anns(masks_L)
-# plt.axis('off')
-# plt.show()
-# print('Model L figure shown')
 
 
 print('debug here')
