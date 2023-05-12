@@ -21,6 +21,7 @@ def SegmentDatasetsbySam():
     for dataset in list(datasetDirs.keys()):
         print(f'Dataset {dataset} started.')
         images, imagePaths = ReadImages(datasetDirs[dataset])
+        images = [cv.cvtColor(img, cv.COLOR_GRAY2RGB) for img in images]
         datasetDurations = dict()
         datasetTimes = []
 
@@ -30,7 +31,7 @@ def SegmentDatasetsbySam():
             samImage = SegmentBySAM(image, model, modelCheckpoint)
             toc = time.time() - tic
             datasetTimes.append(toc)
-            ExportBinaryMask(samImage, model, str(exportDirs[dataset] / ('SAM-segmented')), imagePaths[i])
+            ExportBinaryMask(samImage, model, exportDirs[dataset] / 'SAM-segmented', imagePaths[i])
             print(f'Image {i + 1} finished.')
 
         datasetDurations['durations'] = datasetTimes
