@@ -37,6 +37,7 @@ def MeasureSegmentationDurationOfModels():
             print(f'Image {i + 1} finished.')
         modelsSegDurations[model] = modelDuration
         print(f'Model {model} finished.')
+    modelsSegDurations['imageNames'] = [imagePath.name for imagePath in imagesNames]
     ExportDurations(modelsSegDurations, exportDir)
 
     print('f')
