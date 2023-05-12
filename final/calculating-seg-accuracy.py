@@ -27,6 +27,14 @@ def SaveOverlay(overlay, exportPath, imagePath):
 # segmenter = 'OrganoID'
 # datasetName = 'EMC'
 
+# EMC dataset - segmented by SAM
+set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
+set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
+exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
+set1_pred_Dir = exportPath / 'OrganoID_segmented'
+segmenter = 'OrganoID'
+datasetName = 'EMC'
+
 # OrganoID Gemcitabine dataset - segmented by OrganoTrack
 # set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/groundTruth')
 # set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original')
@@ -51,13 +59,13 @@ def SaveOverlay(overlay, exportPath, imagePath):
 # segmenter = 'OrganoTrack'
 # datasetName = 'OrganoID-MouseOrganoids'
 
-# OrganoID MouseOrganoids dataset - segmented by OrganoID
-set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/GroundTruth')
-set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')
-exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')
-set1_pred_Dir = exportPath / 'OrganoID-segmented'
-segmenter = 'OrganoID'
-datasetName = 'OrganoID-MouseOrganoids'
+# # OrganoID MouseOrganoids dataset - segmented by OrganoID
+# set1_GT_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/GroundTruth')
+# set1_ori_Dir = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')
+# exportPath = Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')
+# set1_pred_Dir = exportPath / 'OrganoID-segmented'
+# segmenter = 'OrganoID'
+# datasetName = 'OrganoID-MouseOrganoids'
 
 
 # GT images
