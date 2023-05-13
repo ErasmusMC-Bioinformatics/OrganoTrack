@@ -58,6 +58,10 @@ def ExportBinaryMask(mask, model, exportDir, fileName):
     else:
         summedBooleanToBinaryMapping[2:] = 1
     binarySamMask = summedBooleanToBinaryMapping[sumOfImageRegions]
+    binarySamMask = binarySamMask.astype(np.uint8)
+    _, binarySamMask = cv.threshold(binarySamMask, 0, 255, cv.THRESH_BINARY)  # anything more than 0 becomes full
+    cv.imshow('organoid image', binarySamMask)
+    cv.waitKey(0)
     cv.imwrite(str(exportDir / fileName.name), binarySamMask)
 
 

@@ -6,15 +6,7 @@ import cv2 as cv
 from SamMeasureModelDuration import ExportBinaryMask, SegmentBySAM, ExportDurations
 import time
 
-def SegmentDatasetsbySam():
-    datasetDirs = {'EMC': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/sam-segment-part-cis-data/input'),
-                   'OrganoID Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original'),
-                   'OrganoID Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')}
-
-    exportDirs = {'EMC': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/sam-segment-part-cis-data/output'),
-                  'OrganoID Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/export'),
-                  'OrganoID Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')}
-
+def SegmentDatasetsbySam(datasetDirs, exportDirs):
     model = 'vit_b'
     modelCheckpoint = 'sam_vit_b_01ec64.pth'
 
@@ -39,5 +31,25 @@ def SegmentDatasetsbySam():
         ExportDurations(datasetDurations, exportDirs[dataset])
         print(f'Dataset {dataset} finished.')
 
+def SamSegmentPartCisAllOrganoID():
+    datasetDirs = {'EMC': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/sam-segment-part-cis-data/input'),
+                   'OrganoID Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original'),
+                   'OrganoID Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')}
+
+    exportDirs = {'EMC': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/sam-segment-part-cis-data/output'),
+                  'OrganoID Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/export'),
+                  'OrganoID Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')}
+
+    SegmentDatasetsbySam(datasetDirs, exportDirs)
+
+def SamSegmentOrganoIDAgain():
+    datasetDirs = {'OrganoID Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/original'),
+                   'OrganoID Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Original')}
+
+    exportDirs = {'OrganoID Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData/export'),
+                  'OrganoID Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids/Export')}
+
+    SegmentDatasetsbySam(datasetDirs, exportDirs)
+
 if __name__ == '__main__':
-    SegmentDatasetsbySam()
+    SamSegmentOrganoIDAgain()
