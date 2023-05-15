@@ -1,2 +1,3 @@
 Input data requirements:
 - Input images should be named such when the images are ordered alphanumerically, the timelapse stacks are together. E.g. r2c2f1sk1, r2c2f1sk2, r2c2f1sk3, r2c2f1sk4 (where sk refers to time, f to field, r-c- to row and column). Also, the naming should allow the field images of one well to be together. E.g. r2c2f01sk1-4, r2c2f02sk1-4, ..., r2c2f25sk1-4, (25 fields for one well), another well ...
+- Input images should be within a folder called images, within a parent folder. The directory of this parent folder should be given, and 'images' folder should be the first element in a list of items/directories in the parent folder

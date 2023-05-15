@@ -1,8 +1,8 @@
 from pathlib import Path
-from Detecting import Evaluate, SegmentWithOrganoSegPy
+from OrganoTrack.Detecting import Evaluate, SegmentWithOrganoSegPy
 import numpy as np
-from Importing import ReadImages
-from Displaying import DisplayImages
+from OrganoTrack.Importing import ReadImages
+from OrganoTrack.Displaying import DisplayImages
 import cv2 as cv
 from datetime import datetime
 import os
@@ -27,10 +27,18 @@ def SaveOverlay(overlay, exportPath, imagePath):
 # segmenter = 'OrganoID'
 # datasetName = 'EMC'
 
-# EMC dataset - segmented by SAM
+# # EMC dataset - segmented by SAM
+# set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
+# set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
+# exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
+# set1_pred_Dir = exportPath / 'OrganoID_segmented'
+# segmenter = 'OrganoID'
+# datasetName = 'EMC'
+
+# EMC dataset - segmented by Harmony
 set1_GT_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations')
 set1_ori_Dir = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/2.images-with-edited-names-finished-annotating')
-exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
+exportPath = Path('/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/images-for-OrganoTrack-Harmony-comparison/export')
 set1_pred_Dir = exportPath / 'OrganoID_segmented'
 segmenter = 'OrganoID'
 datasetName = 'EMC'
@@ -68,10 +76,10 @@ datasetName = 'EMC'
 # datasetName = 'OrganoID-MouseOrganoids'
 
 
-# GT images
+# Load GT images
 groundTruthImages, gtImageNames = ReadImages(set1_GT_Dir)
 
-
+# Get prediction images
 if not os.path.exists(set1_pred_Dir) and segmenter == 'OrganoTrack':
     oriImages, imageNames = ReadImages(set1_ori_Dir)
     segParams = [0.5, 250, 150]
@@ -80,20 +88,22 @@ if not os.path.exists(set1_pred_Dir) and segmenter == 'OrganoTrack':
 else:
     predictionImages, imageNames = ReadImages(set1_pred_Dir)
 
-# Sorting image names in case of error
 
-segmentationScores = np.zeros((len(predictionImages), 3))
 
+
+# Create directory to store overlays
 overlayExportPath = exportPath / (segmenter+'-overlay')
 if not os.path.exists(overlayExportPath):
     os.mkdir(overlayExportPath)
 
-
+segmentationScores = np.zeros((len(predictionImages), 3))
+# Evaluating prediction against ground truth
 for i, (prediction, groundTruth) in enumerate(zip(predictionImages, groundTruthImages)):
     segmentationScores[i], overlay = Evaluate(prediction, groundTruth)
     SaveOverlay(overlay, overlayExportPath, imageNames[i])
 
 
+# Exportnig segmentation accuracies
 indexNames = []
 for i in range(len(imageNames)):
     indexNames.append(imageNames[i].name)

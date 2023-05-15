@@ -69,10 +69,10 @@ def Test_ReadPlateLayout():
 
 def ReadImages(inputDataPath):
     '''
-    :param inputDataPath: a Path object to the input folder of the desired experiment
-    :return: a list of np.array grayscale images
+    Read Images requires that the images are within a folder called '/images', that inputDataPath is the parent folder
+    of '/images', and that '/images' is teh first item in a list of files in the parent folder (hence line 77 calls
+    for the first element)
     '''
-
     print("\nReading data...")
 
     imagesFolderName = sorted(os.listdir(inputDataPath))[0]  # the first element should be the 'images' folder
