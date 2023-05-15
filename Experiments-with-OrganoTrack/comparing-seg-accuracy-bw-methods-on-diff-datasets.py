@@ -206,15 +206,78 @@ def OrganoTrackVsHarmony():  # one dataset
         ax.set_xlim(800, 1200)
 
         ax.set_title(f'{measure} score') #  for OrganoTrack and the baseline on a sample of the EMC dataset
-        palette = ['b', 'g', 'r', 'c', 'm', 'k']
-        for x, val, c in zip(xs, normFracGrowthValues, palette):
-            ax.scatter(x, val, alpha=0.4, color=c)
+        # palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        # for x, val, c in zip(xs, normFracGrowthValues, palette):
+        #     ax.scatter(x, val, alpha=0.4, color=c)
         plt.tight_layout()
         fig.show()
 
+def OrganoTrackVsOrganoID():  # one dataset
+    datasets = ['EMC-preliminary', 'OrganoID-Mouse', 'OrganoID-Original']
+    predictors = ['OrganoTrack', 'OrganoID']
+    analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
+
+    # analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
+
+    # if not os.path.exists(analysisFile):
+    datasetsDirs = GetDatasetsDirs(datasets)
+    datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
+    # ViewLoadedImages(datasetsGtAndPreds)
+
+    datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
+    print('h')
+    #     ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
+    # else:
+    #     ExperimentPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
+
+    # PlotPredictionAccuracies(datasetsPredictionScores, predictors)
+
+    # Plotting
+    x = np.array([1000, 2000, 3000])  # 3 datasets
+    measures = ['F1', 'IOU', 'Dice']
+    measureIndex = [0, 1, 2]
+    boxWidth = 100
+    plt.rcParams.update({'font.size': 15})
+
+    # https://stackoverflow.com/questions/14952401/creating-double-boxplots-i-e-two-boxes-for-each-x-value
+    for measure, index in zip(measures, measureIndex):
+        fig, ax = plt.subplots()
+        data1 = []
+        data2 = []
+        for dataset in datasets:
+            data1.append(datasetsPredictionScores[dataset]['OrganoTrack'][:, index])
+            data2.append(datasetsPredictionScores[dataset]['OrganoID'][:, index])
+        ax.boxplot(data1, positions=x-100, showfliers=False, widths=boxWidth) # one box plot corresponds to one method, not one dataset
+        ax.boxplot(data2, positions=x+100,
+                       showfliers=False, widths=boxWidth)   # one box plot corresponds to one method, not one dataset
+            # fill with colors, https://matplotlib.org/stable/gallery/statistics/boxplot_color.html
+            # colors = ['lightblue', 'lightgreen']
+            # for bplot in bplot1:
+            #     for patch, color in zip(bplot['boxes'], colors):
+            #         patch.set_facecolor(color)
+
+        ax.set_ylabel(f'{measure} score')
+        ax.set_ylim(0, 100)
+        plt.xticks(x)
+        labels = [item.get_text() for item in ax.get_xticklabels()]
+        labels[0] = 'EMC'
+        labels[1] = 'Mouse'
+        labels[2] = 'Original'
+
+        ax.set_xticklabels(labels)
+        ax.set_xlim(800, 3200)
+
+        ax.set_title(f'{measure} score') #  for OrganoTrack and the baseline on a sample of the EMC dataset
+        # palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        # for x, val, c in zip(xs, normFracGrowthValues, palette):
+        #     ax.scatter(x, val, alpha=0.4, color=c)
+        plt.tight_layout()
+        fig.show()
+        print('h')
+
 
 if __name__ == '__main__':
-    OrganoTrackVsHarmony()
+    OrganoTrackVsOrganoID()
 
 
 
