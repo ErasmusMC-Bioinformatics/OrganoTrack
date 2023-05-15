@@ -5,12 +5,10 @@ import cv2 as cv
 import numpy as np
 from skimage.morphology import reconstruction
 from skimage.filters import threshold_otsu
-from Exporting import SaveData
-from Displaying import Display
 
 # temporary
 from pathlib import Path
-from Importing import ReadImages
+from OrganoTrack.Importing import ReadImages
 
 
 def Smoothen(image):

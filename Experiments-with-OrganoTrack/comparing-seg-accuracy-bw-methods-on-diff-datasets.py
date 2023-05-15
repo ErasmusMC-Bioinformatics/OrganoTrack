@@ -8,16 +8,20 @@ import cv2 as cv
 from datetime import datetime
 import os
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def SaveOverlay(overlay, exportPath, imagePath):
     cv.imwrite(str(exportPath / imagePath.name), overlay)
 
 
 def GetDatasetsDirs(datasets):
-    datasetDirs = {'EMC-prelim': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset'),
+    datasetDirs = {'EMC-preliminary': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset'),
                    'OrganoID-Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids'),
                    'OrganoID-Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData')}
-    return datasetDirs[datasets]
+    datasetsDirs = dict()
+    for dataset in datasets:
+        datasetsDirs[dataset] = datasetDirs[dataset]
+    return datasetsDirs
 
 def LoadImages(datasetsDirs, predictionMethods):
 
@@ -49,6 +53,17 @@ def LoadImages(datasetsDirs, predictionMethods):
 
     return datasetsGroundTruthsAndPredictions
 
+def ViewLoadedImages(datasetsGtAndPreds):
+    datasets = list(datasetsGtAndPreds.keys())
+    methods = list(datasetsGtAndPreds[datasets[0]].keys())
+    for dataset in datasets:
+        for method in methods:
+            images = datasetsGtAndPreds[dataset][method][0]
+            for i, image in enumerate(images):
+                cv.imshow(f'{dataset}, {method},{i}', image)
+    cv.waitKey(0)
+
+
 def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictionMethods):
 
     datasetsSegScoresWithDiffMethods = dict()
@@ -76,9 +91,11 @@ def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictionMethod
                 SaveOverlay(overlay, overlayExportPath, predictedImagesNames[i])
 
             segScoresWithDiffMethods[method] = segmentationScores
-            segScoresWithDiffMethods['imageNames'] = predictedImagesNames
+        segScoresWithDiffMethods['imageNames'] = predictedImagesNames
 
         datasetsSegScoresWithDiffMethods[dataset] = segScoresWithDiffMethods
+
+    return datasetsSegScoresWithDiffMethods
 
 def ExportPredictionScores(datasetsPredictionScores, analysisFileName, predictionMethods):
     # Exporting segmentation accuracies
@@ -104,8 +121,10 @@ def LoadPredictionScoreAnalysis():
     pass
 
 
-def PlotPredictionAccuracies():
+def PlotPredictionAccuracies(datasetsPredictionScores):
+
     pass
+
 
 def OrganoTrackVsHarmony():  # one dataset
     datasets = ['EMC-preliminary']
@@ -114,15 +133,17 @@ def OrganoTrackVsHarmony():  # one dataset
 
     analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
 
-    if not os.path.exists(analysisFile):
-        datasetsDirs = GetDatasetsDirs(datasets)
-        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
-        datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
-        ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
-    else:
-        ExperimentPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
+    # if not os.path.exists(analysisFile):
+    datasetsDirs = GetDatasetsDirs(datasets)
+    datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
+    # ViewLoadedImages(datasetsGtAndPreds)
 
-    PlotPredictionAccuracies()
+    datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
+    #     ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
+    # else:
+    #     ExperimentPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
+
+    PlotPredictionAccuracies(datasetsPredictionScores)
 
 
 if __name__ == '__main__':

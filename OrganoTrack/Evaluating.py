@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 from pathlib import Path
-from Displaying import Display
+from OrganoTrack.Displaying import Display
 
 def BinariseTo1(predictionImage, groundTruthImage):
 
