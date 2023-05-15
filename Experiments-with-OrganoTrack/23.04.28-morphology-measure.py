@@ -1,5 +1,5 @@
-from final.Detecting import SegmentWithOrganoSegPy
-from final.Displaying import Display
+from OrganoTrack.Detecting import SegmentWithOrganoSegPy
+from OrganoTrack.Displaying import Display
 import cv2 as cv
 
 dir = "/home/franz/Documents/mep/data/experiments/2023-02-24-Cis-Tos-dataset-mathijs/AZh5/Day-12"

@@ -79,7 +79,7 @@ def SeparateOverlappingObjets(currentImage):
             if index > 0 and index <= len(contours):
                 dst[i, j, :] = colors[index - 1]
 
-    # Visualize the final image
+    # Visualize the OrganoTrack image
     if displayState:
         Display('Final Result', dst, displayScale)
 

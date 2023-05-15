@@ -104,9 +104,9 @@ def adaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
     tic = time.process_time()
     imDataInfo = np.iinfo(imDataType)
     final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(np.uint8)  # typecast to uint8 to save memory
-    # final, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
-    # print(np.shape(final))
-    # print(type(final[0][0]))
+    # OrganoTrack, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
+    # print(np.shape(OrganoTrack))
+    # print(type(OrganoTrack[0][0]))
     toc = time.process_time() - tic
-    print("final: " + str(toc))
+    print("OrganoTrack: " + str(toc))
     return final

@@ -2,7 +2,7 @@ import cv2 as cv
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 import numpy as np
 from pathlib import Path
-from final.Importing import ReadImages
+from OrganoTrack.Importing import ReadImages
 import time
 import pandas as pd
 

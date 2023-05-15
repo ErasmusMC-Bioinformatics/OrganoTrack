@@ -263,7 +263,7 @@ if __name__ == '__main__':
     dataDir = '/home/franz/Documents/mep/data/2023-02-24-Cis-Tos-dataset-mathijs/AZh5/Day-12'
     imageMPS = cv.imread(dataDir+'/D7 1.tif', cv.IMREAD_GRAYSCALE)
     segmented = segmentWithOrganoSegPy(imageMPS)
-    display('final', segmented, 0.25)
+    display('OrganoTrack', segmented, 0.25)
     # BTdir = '/home/franz/Documents/mep/data/cisplatin-drug-screen/field-1-rep-1'
     # imageBT = cv.imread(BTdir + '/d0r1t0.tiff', cv.IMREAD_GRAYSCALE)
     # segmentWithOrganoSegPy(imageBT)

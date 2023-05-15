@@ -4,7 +4,7 @@ from Displaying import display
 
 import cv2 as cv
 
-dataDir = '/home/franz/Documents/mep/data/experiments/organoid-morphology'
+dataDir = '/home/franz/Documents/mep/data/Experiments-with-OrganoTrack/organoid-morphology'
 
 images, imageNames = readImages(dataDir)
 

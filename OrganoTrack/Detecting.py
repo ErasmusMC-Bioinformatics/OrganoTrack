@@ -113,7 +113,7 @@ def AdaptiveThreshold(img, windowSize, fudgeFactor, imDataType, mode='mean'):
     # 5 ) thresholding  with otsu
     imDataInfo = np.iinfo(imDataType)
     final = ((subtract > otsu*fudgeFactor) * imDataInfo.max).astype(np.uint8)  # typecast to uint8 to save memory
-    # final, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
+    # OrganoTrack, _ = cv.threshold(substract, otsu*fudgeFactor, 255, cv.THRESH_BINARY)
 
 
     return final

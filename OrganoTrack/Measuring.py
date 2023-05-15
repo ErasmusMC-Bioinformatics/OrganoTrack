@@ -58,5 +58,5 @@ def AnalyzeAndExport(images: np.ndarray, path: Path):
 if __name__ == '__main__':
     Test_MeasureMorphometry()
 
-    # display('final', image, 0.25)
+    # display('OrganoTrack', image, 0.25)
     # cv.waitKey(0)
