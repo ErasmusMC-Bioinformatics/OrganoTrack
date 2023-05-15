@@ -10,6 +10,13 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+'''
+    With this file, boxplots can be generated, comparing the segmentation accuracies for different methods on different
+    datasets. It is required, however, that each dataset directory is divided into "original", "groundTruth", and 
+    "predicted".
+'''
+
+
 def SaveOverlay(overlay, exportPath, imagePath):
     cv.imwrite(str(exportPath / imagePath.name), overlay)
 
@@ -121,7 +128,30 @@ def LoadPredictionScoreAnalysis():
     pass
 
 
-def PlotPredictionAccuracies(datasetsPredictionScores):
+def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
+    datasets = list(datasetsPredictionScores.keys())
+    x = [1000]
+    measures = ['F1', 'IOU', 'Dice']
+    measureIndex = [0, 1, 2]
+
+    plt.rcParams.update({'font.size': 15})
+    for measure, index in zip(measures, measureIndex):
+        fig, ax = plt.subplots()
+        for dataset in datasets:
+            for method in predictionMethods:
+                data.append(datasetsPredictionScores[dataset][method][:, index])
+                data = np.array(data).T
+                ax.boxplot(data, positions=x, showfliers=False) # one box plot corresponds to one method, not one dataset
+        ax.set_ylabel(f'{measure} score')
+        ax.set_xlabel('Datasets')
+        ax.set_ylim(0, 100)
+        ax.set_title(f'{measure} score') #  for OrganoTrack and the baseline on a sample of the EMC dataset
+        palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        # for x, val, c in zip(xs, normFracGrowthValues, palette):
+        #     ax.scatter(x, val, alpha=0.4, color=c)
+        plt.tight_layout()
+        fig.show()
+
 
     pass
 
@@ -143,7 +173,44 @@ def OrganoTrackVsHarmony():  # one dataset
     # else:
     #     ExperimentPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
 
-    PlotPredictionAccuracies(datasetsPredictionScores)
+    # PlotPredictionAccuracies(datasetsPredictionScores, predictors)
+
+    # Plotting
+    x = np.array([1000])
+    measures = ['F1', 'IOU', 'Dice']
+    measureIndex = [0, 1, 2]
+    boxWidth = 100
+    plt.rcParams.update({'font.size': 15})
+
+
+    for measure, index in zip(measures, measureIndex):
+        fig, ax = plt.subplots()
+        for dataset in datasets:
+            data1 = np.array(datasetsPredictionScores[dataset]['Harmony'][:, index]).T
+            ax.boxplot(data1, positions=x-100, showfliers=False, widths=boxWidth) # one box plot corresponds to one method, not one dataset
+            data2 = np.array(datasetsPredictionScores[dataset]['OrganoTrack'][:, index]).T
+            ax.boxplot(data2, positions=x+100,
+                       showfliers=False, widths=boxWidth)   # one box plot corresponds to one method, not one dataset
+            # fill with colors, https://matplotlib.org/stable/gallery/statistics/boxplot_color.html
+            # colors = ['lightblue', 'lightgreen']
+            # for bplot in bplot1:
+            #     for patch, color in zip(bplot['boxes'], colors):
+            #         patch.set_facecolor(color)
+
+        ax.set_ylabel(f'{measure} score')
+        ax.set_ylim(0, 100)
+        plt.xticks(x)
+        labels = [item.get_text() for item in ax.get_xticklabels()]
+        labels[0] = 'EMC preliminary dataset'
+        ax.set_xticklabels(labels)
+        ax.set_xlim(800, 1200)
+
+        ax.set_title(f'{measure} score') #  for OrganoTrack and the baseline on a sample of the EMC dataset
+        palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        for x, val, c in zip(xs, normFracGrowthValues, palette):
+            ax.scatter(x, val, alpha=0.4, color=c)
+        plt.tight_layout()
+        fig.show()
 
 
 if __name__ == '__main__':
