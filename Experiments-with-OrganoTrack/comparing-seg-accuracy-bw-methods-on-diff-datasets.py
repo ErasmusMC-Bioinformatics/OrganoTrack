@@ -199,9 +199,9 @@ def OrganoTrackVsHarmony():  # one dataset
 
         ax.set_ylabel(f'{measure} score')
         ax.set_ylim(0, 100)
-        plt.xticks(x)
         labels = [item.get_text() for item in ax.get_xticklabels()]
-        labels[0] = 'EMC preliminary dataset'
+        labels[0] = 'Baseline'  # change to OrganoTrack and baseline
+        labels[1] = 'OrganoTrack'
         ax.set_xticklabels(labels)
         ax.set_xlim(800, 1200)
 
@@ -277,7 +277,7 @@ def OrganoTrackVsOrganoID():  # one dataset
 
 
 if __name__ == '__main__':
-    OrganoTrackVsHarmony()
+    OrganoTrackVsOrganoID()
 
 
 
