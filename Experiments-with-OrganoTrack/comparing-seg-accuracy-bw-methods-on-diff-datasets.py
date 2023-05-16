@@ -277,7 +277,7 @@ def OrganoTrackVsOrganoID():  # one dataset
 
 
 if __name__ == '__main__':
-    OrganoTrackVsOrganoID()
+    OrganoTrackVsHarmony()
 
 
 
