@@ -260,9 +260,9 @@ def OrganoTrackVsOrganoID():  # one dataset
         ax.set_ylim(0, 100)
         plt.xticks(x)
         labels = [item.get_text() for item in ax.get_xticklabels()]
-        labels[0] = 'EMC'
-        labels[1] = 'Mouse'
-        labels[2] = 'Original'
+        labels[0] = 'EMC\npreliminary\ndataset'
+        labels[1] = 'OrganoID\nmouse organoids\ndataset'
+        labels[2] = 'OrganoID\noriginal organoids\ndataset'
 
         ax.set_xticklabels(labels)
         ax.set_xlim(800, 3200)
