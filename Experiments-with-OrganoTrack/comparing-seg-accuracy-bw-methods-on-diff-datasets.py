@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import openpyxl
 
 '''
@@ -135,20 +136,9 @@ def LoadPredictionScoreAnalysis(analysisFilePath):
 
     datasetsPredictionScores = dict()
     for dataset in datasets:
-
-        extension = analysisFilePath.suffix
-
-        if extension == '.xlsx':
-            oneDatasetMethodsPredictionsDf = pd.read_excel(analysisFilePath, header=None)
-
-        elif extension == '.csv':
-            oneDatasetMethodsPredictionsDf = pd.read_csv(analysisFilePath, header=None)
-
-        elif extension == '.tsv':
-            oneDatasetMethodsPredictionsDf = pd.read_csv(analysisFilePath, header=None, delimiter='\t')
+        oneDatasetMethodsPredictionsDf = pd.read_excel(analysisFilePath, sheet_name=str(dataset), header=None)
 
         oneDatasetMethodsPredictions = dict()
-
 
         firstRow = oneDatasetMethodsPredictionsDf.iloc[0]
         methods = firstRow.dropna().tolist()
@@ -160,17 +150,20 @@ def LoadPredictionScoreAnalysis(analysisFilePath):
 
         datasetsPredictionScores[dataset] = oneDatasetMethodsPredictions
 
-        return datasetsPredictionScores
+    return datasetsPredictionScores
 
 
 
 def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     datasets = list(datasetsPredictionScores.keys())
-
+    # https: // matplotlib.org / stable / gallery / statistics / boxplot_demo.html
     measures = ['F1', 'IOU', 'Dice']
     measureIndex = [0, 1, 2]
 
     plt.rcParams.update({'font.size': 15})
+
+    # Plotting colours
+    colours = list(mcolors.CSS4_COLORS.keys())
 
     for segAccuracyMeasure, index in zip(measures, measureIndex):
         fig, ax = plt.subplots()
@@ -196,18 +189,17 @@ def OrganoTrackVsHarmony():  # one dataset
     datasets = ['EMC-preliminary']
     predictors = ['Harmony', 'OrganoTrack']
     analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
-
     analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
+    analysisExists = os.path.exists(analysisFile)
 
-    # if not os.path.exists(analysisFile):
-    datasetsDirs = GetDatasetsDirs(datasets)
-    datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
-    # ViewLoadedImages(datasetsGtAndPreds)
-
-    datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
-    # ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
-    # else:
-    ExperimentPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
+    if not analysisExists:
+        datasetsDirs = GetDatasetsDirs(datasets)
+        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
+        # ViewLoadedImages(datasetsGtAndPreds)
+        datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
+        ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
+    else:
+        datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
 
     PlotPredictionAccuracies(datasetsPredictionScores, predictors)
 
@@ -247,23 +239,24 @@ def OrganoTrackVsHarmony():  # one dataset
     #     plt.tight_layout()
     #     fig.show()
 
-def OrganoTrackVsOrganoID():  # one dataset
+def OrganoTrackVsOrganoID():
     datasets = ['EMC-preliminary', 'OrganoID-Mouse', 'OrganoID-Original']
     predictors = ['OrganoTrack', 'OrganoID']
     analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
 
-    # analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
+    analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
+    analysisExists = os.path.exists(analysisFile)
 
     # if not os.path.exists(analysisFile):
-    datasetsDirs = GetDatasetsDirs(datasets)
-    datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
-    # ViewLoadedImages(datasetsGtAndPreds)
 
-    datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
-    print('h')
-    #     ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
-    # else:
-    #     ExperimentPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
+    if not analysisExists:
+        datasetsDirs = GetDatasetsDirs(datasets)
+        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
+        # ViewLoadedImages(datasetsGtAndPreds)
+        datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
+        ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
+    else:
+        datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
 
     PlotPredictionAccuracies(datasetsPredictionScores, predictors)
 
@@ -315,6 +308,6 @@ def OrganoTrackVsOrganoID():  # one dataset
 
 
 if __name__ == '__main__':
-    OrganoTrackVsHarmony()
+    OrganoTrackVsOrganoID()
 
 
