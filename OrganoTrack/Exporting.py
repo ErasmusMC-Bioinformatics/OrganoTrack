@@ -27,6 +27,7 @@ def SaveData(exportPath, images, imagePaths):
 #
 #     dataDict = {}  # dictionary with property names as keys and dictionaries as values.
 #     # The lower level dictionaries have well names as keys and property measure df's as values.
+#
 #     with pd.ExcelWriter(str(outputPath.absolute())) as writer:
 #         # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
 #
