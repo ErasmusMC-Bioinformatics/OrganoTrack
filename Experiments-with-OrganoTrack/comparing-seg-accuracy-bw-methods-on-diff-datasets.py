@@ -166,7 +166,9 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     colours = list(mcolors.CSS4_COLORS.keys())
     # chosenPoolOfColours = colours['blue']
 
+
     for segAccuracyMeasure, index in zip(measures, measureIndex):
+        plotTicks, boxplotPositionsPerMethod = ComputeBoxplotTicksAndPositions(predictionMethods, len(datasets))
         fig, ax = plt.subplots()
 
         dataAcrossDatasetsAndMethods = []
@@ -185,6 +187,44 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
         fig.show()
 
 
+def ComputeBoxplotTicksAndPositions(methods, numDatasets):
+
+    boxplotPositionsPerMethod = dict()
+    numMethods = len(methods)
+
+    plotTicks = ComputeBoxplotTicks(numMethods, numDatasets)
+
+    for method in methods:
+        positionsArray = ComputeMethodBoxplotPositions(plotTicks, numMethods)
+        boxplotPositionsPerMethod[method] = positionsArray
+
+    return plotTicks, boxplotPositionsPerMethod
+
+
+def ComputeBoxplotTicks(numMethods, numDatasets):
+    startingLength = 0.5
+    boxWidth = 0.5
+    spacesBetweenBoxes = 0.1
+
+    startingTick = startingLength + (numMethods/2)*boxWidth + ((numMethods-1)/2)*spacesBetweenBoxes
+    additionTick = startingLength + numMethods*boxWidth + (numMethods-1)*spacesBetweenBoxes
+
+    plotTicks = np.zeros(numDatasets)
+    plotTicks[0] = startingTick
+    for i in range(1, len(plotTicks)):
+        plotTicks[i] = plotTicks[i-1] + additionTick
+
+    return plotTicks
+
+def TestComputePlotTicks():
+    numMethods = 3
+    numDatasets = 4
+    plotTicks = ComputeBoxplotTicks(numMethods, numDatasets)
+
+def ComputeMethodBoxplotPositions(plotTicks, numMethods):
+    if numMethods == 1:
+        positions = plotTicks
+    return positions
 
 def OrganoTrackVsHarmony():  # one dataset
     datasets = ['EMC-preliminary']
@@ -327,6 +367,6 @@ def OrganoTrackBlurring():
 
 
 if __name__ == '__main__':
-    OrganoTrackVsHarmony()
+    TestComputePlotTicks()
 
 

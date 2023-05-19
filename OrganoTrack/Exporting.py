@@ -32,7 +32,9 @@ def SaveData(exportPath, images, imagePaths):
 #         # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
 #
 #         for propertyName in propertiesToMeasure:  # if 'roundness'
-#             for i in range(len(imageStacks)):       # for each stack
+#             # startrow = 1
+#             # for each well
+#             for i in range(len(imageStacks)):       # for each field stack in a well
 #
 #                 # > Create the dataframe
 #                 size = (np.max(imageStacks[i]) + 1,     # the highest label in the whole stack + 1
@@ -55,6 +57,7 @@ def SaveData(exportPath, images, imagePaths):
 #
 #                 data.to_excel(writer, sheet_name=propertyName, startrow=1, startcol=i * (size[1] + 2))
 #                 # Within .to_excel(), startrow/col are 0-indexed. Startcol calculated to fit df's next to each other
+#                 # update start row for second field stack in well
 #
 #                 writer.sheets[propertyName].cell(row=1, column=i * (size[1] + 2) + 1).value = imageConditions[i]
 #                 # Within .cell(), row and column are 1-indexed
