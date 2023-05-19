@@ -1,7 +1,7 @@
 from Importing import ReadImages, ReadPlateLayout, ReadImage, UpdatePlateLayoutWithImageNames
 from Detecting import SegmentWithOrganoSegPy
 from Exporting import SaveData, ExportImageStackMeasurements, ExportSingleImageMeasurements
-from Filtering import FilterByFeature
+from Filtering import FilterByFeature, RemoveBoundaryObjects
 from Displaying import DisplayImages, Display, ConvertLabelledImageToBinary, displayingTrackedSet, ExportImageWithContours
 from Tracking import track, SaveImages, MakeDirectory, stack, LabelAndStack, Label
 from Measuring import MeasureMorphometry, CalculateRoundness
@@ -22,14 +22,14 @@ from itertools import chain
 
 
 def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
-                   segParams = None, saveSegParams = None,
-                   saveSeg = False, segmentOrgs = True, segmentedImagesPath = None,
-                   filterOrgs = False, filterCriteria = None,
+                   segmentOrgs = True, segParams = None, saveSegParams = None, segmentedImagesPath = None,
+                   filterBoundary=False, filterOrgs = False, filterCriteria = None,
                    trackOrgs = False, timePoints = None, overlayTrack = False,
                    exportOrgMeasures = False, numberOfWellFields = None, morphPropsToMeasure = None,
                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
 
     inputImages, imageNames = ReadImages(importPath)
+    saveSegParams.append(imageNames)
 
     plateLayout = ReadPlateLayout(importPath)
     plateLayout = UpdatePlateLayoutWithImageNames(plateLayout, imageNames)
@@ -175,6 +175,9 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
                 # Display('Filtered by ' + filterCriteria[i], imagesInAnalysis[0], 0.5)
                 # cv.waitKey(0)
                 # SegmentWithOrganoSegPy(inputImages, saveSeg, exportPath, inputImagesPaths)
+
+    if filterBoundary:
+        imagesInAnalysis = RemoveBoundaryObjects(imagesInAnalysis)
 
     if trackOrgs:
         # Tracking

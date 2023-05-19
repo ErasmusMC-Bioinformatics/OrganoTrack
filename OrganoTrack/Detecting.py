@@ -8,7 +8,7 @@ from skimage.filters import threshold_otsu
 
 # temporary
 from pathlib import Path
-from OrganoTrack.Importing import ReadImages
+from Importing import ReadImages
 
 
 def Smoothen(image):
