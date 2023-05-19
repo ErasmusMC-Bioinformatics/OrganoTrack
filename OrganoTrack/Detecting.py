@@ -148,36 +148,6 @@ def RemoveSmallNoise(image, minObjectSize):
 
     return im_result
 
-def RemoveBoundaryObjects(image):
-    # 0.0276, 0.0149, 0.016 s
-    # Find contours in the binary image
-    contours, _ = cv.findContours(image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-    # # This code visualises the contours found
-    # h, w = binary.shape[:2]
-    # blank = np.zeros((h, w), np.uint8)
-    # maxLength = len(contours[0])
-    # maxIndex = 0
-    # for j in range(len(contours)):
-    #     if len(contours[j]) > maxLength:
-    #         maxLength = len(contours[j])
-    #         maxIndex = j
-    #     for i in range(len(contours[j])):
-    #         blank[contours[j][i][0][1]][contours[j][i][0][0]] = 255
-    # print(maxIndex)  # 632
-    # display('removed', blank, 0.5)
-
-    # Iterate over the contours and remove the ones that are partially in the image
-    for contour in contours:
-        x, y, w, h = cv.boundingRect(contour)
-        # openCV documentation: "Calculates and returns the minimal up-right bounding rectangle for the specified point set"
-
-        if x == 0 or y == 0 or x + w == image.shape[1] or y + h == image.shape[0]:
-            # Contour is partially in the image, remove it
-            cv.drawContours(image, [contour], contourIdx=-1, color=0, thickness=-1)
-            # all contours in the list, because contourIdx = -1, are filled with colour 0, because thickness < 0
-    return image
-
 
 def FillHoles(image):
     # 8.575, 9.611, 8.633 s
@@ -217,9 +187,11 @@ def FillHoles(image):
 
 
 def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParameters):
-    fudgeFactor, maxWindowSize, minObjectSize = segmentationParameters[0], \
-                                                segmentationParameters[1], \
-                                                segmentationParameters[2]
+    fudgeFactor, maxWindowSize, minObjectSize, extraBlur, blurSize = segmentationParameters[0], \
+                                                                     segmentationParameters[1],\
+                                                                     segmentationParameters[2],\
+                                                                     segmentationParameters[3],\
+                                                                     segmentationParameters[4]
 
     saveSegmentation, exportPath, imagePaths = saveSegmentationParameters[0],\
                                                saveSegmentationParameters[1], \
@@ -245,6 +217,8 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
             img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
         img_blur = Smoothen(img)
+        if extraBlur:
+            img_blur = cv.GaussianBlur(img_blur, (blurSize, blurSize), 0)
 
         img_smoothed = OpenAndClose(img_blur, imgDataType)
 
@@ -256,7 +230,7 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
         kernel = np.ones((3, 3), np.uint16)
         binary = cv.morphologyEx(im_result, cv.MORPH_CLOSE, kernel)
 
-        binary = RemoveBoundaryObjects(binary)
+        # binary = RemoveBoundaryObjects(binary)
         filled_binary = FillHoles(binary)
 
         segmentedImages.append(filled_binary)

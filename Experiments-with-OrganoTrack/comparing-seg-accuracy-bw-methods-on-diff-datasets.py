@@ -32,7 +32,7 @@ def GetDatasetsDirs(datasets):
         datasetsDirs[dataset] = datasetDirs[dataset]
     return datasetsDirs
 
-def LoadImages(datasetsDirs, predictionMethods):
+def LoadImages(datasetsDirs, predictionMethods, extraBlur=False, blurSize=3):
 
     datasetsGroundTruthsAndPredictions = dict()
 
@@ -49,7 +49,7 @@ def LoadImages(datasetsDirs, predictionMethods):
             if method == 'OrganoTrack' and not os.path.exists(predictionDir):
                 originalImagesDir = datasetDir / 'original'
                 originalImages, predictionImagesNames = ReadImages(originalImagesDir)
-                segParams = [0.5, 250, 150]
+                segParams = [0.5, 250, 150, extraBlur, blurSize]
                 exportPath = datasetDir / 'predictions'
                 saveSegParams = [True, exportPath, predictionImagesNames]
                 predictionImages = SegmentWithOrganoSegPy(originalImages, segParams, saveSegParams)
@@ -164,6 +164,7 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
 
     # Plotting colours
     colours = list(mcolors.CSS4_COLORS.keys())
+    # chosenPoolOfColours = colours['blue']
 
     for segAccuracyMeasure, index in zip(measures, measureIndex):
         fig, ax = plt.subplots()
@@ -175,7 +176,7 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
                 dataAcrossDatasetsAndMethods.append(datasetsPredictionScores[dataset][method][:, index])
 
         # dataAcrossDatasetsAndMethods = np.array(dataAcrossDatasetsAndMethods).T
-        ax.boxplot(dataAcrossDatasetsAndMethods)  # one box plot corresponds to one method, not one dataset
+        ax.boxplot(dataAcrossDatasetsAndMethods, widths=0.5)  # one box plot corresponds to one method, not one dataset
 
         ax.set_ylabel(f'{segAccuracyMeasure} score')
         ax.set_xlabel('Datasets')
@@ -191,53 +192,54 @@ def OrganoTrackVsHarmony():  # one dataset
     analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
     analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
     analysisExists = os.path.exists(analysisFile)
+    toBlur = False
 
     if not analysisExists:
         datasetsDirs = GetDatasetsDirs(datasets)
-        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
+        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors, toBlur, 3)
         # ViewLoadedImages(datasetsGtAndPreds)
         datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
         ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
     else:
         datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
 
-    PlotPredictionAccuracies(datasetsPredictionScores, predictors)
+    # PlotPredictionAccuracies(datasetsPredictionScores, predictors)
 
-    # # Plotting
-    # x = np.array([1000])
-    # measures = ['F1', 'IOU', 'Dice']
-    # measureIndex = [0, 1, 2]
-    # boxWidth = 100
-    # plt.rcParams.update({'font.size': 15})
-    #
-    #
-    # for measure, index in zip(measures, measureIndex):
-    #     fig, ax = plt.subplots()
-    #     for dataset in datasets:
-    #         data1 = np.array(datasetsPredictionScores[dataset]['Harmony'][:, index]).T
-    #         ax.boxplot(data1, positions=x-100, showfliers=False, widths=boxWidth) # one box plot corresponds to one method, not one dataset
-    #         data2 = np.array(datasetsPredictionScores[dataset]['OrganoTrack'][:, index]).T
-    #         ax.boxplot(data2, positions=x+100,
-    #                    showfliers=False, widths=boxWidth)   # one box plot corresponds to one method, not one dataset
-    #         # fill with colors, https://matplotlib.org/stable/gallery/statistics/boxplot_color.html
-    #         # colors = ['lightblue', 'lightgreen']
-    #         # for bplot in bplot1:
-    #         #     for patch, color in zip(bplot['boxes'], colors):
-    #         #         patch.set_facecolor(color)
-    #
-    #     ax.set_ylabel(f'{measure} score')
-    #     ax.set_ylim(0, 100)
-    #     labels = [item.get_text() for item in ax.get_xticklabels()]
-    #     labels[0] = 'Baseline'  # change to OrganoTrack and baseline
-    #     labels[1] = 'OrganoTrack'
-    #     ax.set_xticklabels(labels)
-    #     ax.set_xlim(800, 1200)
-    #
-    #     # palette = ['b', 'g', 'r', 'c', 'm', 'k']
-    #     # for x, val, c in zip(xs, normFracGrowthValues, palette):
-    #     #     ax.scatter(x, val, alpha=0.4, color=c)
-    #     plt.tight_layout()
-    #     fig.show()
+    # Plotting
+    x = np.array([1000])
+    measures = ['F1', 'IOU', 'Dice']
+    measureIndex = [0, 1, 2]
+    boxWidth = 100
+    plt.rcParams.update({'font.size': 15})
+
+
+    for measure, index in zip(measures, measureIndex):
+        fig, ax = plt.subplots()
+        for dataset in datasets:
+            data1 = np.array(datasetsPredictionScores[dataset]['Harmony'][:, index]).T
+            ax.boxplot(data1, positions=x-100, showfliers=False, widths=boxWidth) # one box plot corresponds to one method, not one dataset
+            data2 = np.array(datasetsPredictionScores[dataset]['OrganoTrack'][:, index]).T
+            ax.boxplot(data2, positions=x+100,
+                       showfliers=False, widths=boxWidth)   # one box plot corresponds to one method, not one dataset
+            # fill with colors, https://matplotlib.org/stable/gallery/statistics/boxplot_color.html
+            # colors = ['lightblue', 'lightgreen']
+            # for bplot in bplot1:
+            #     for patch, color in zip(bplot['boxes'], colors):
+            #         patch.set_facecolor(color)
+
+        ax.set_ylabel(f'{measure} score')
+        ax.set_ylim(0, 100)
+        labels = [item.get_text() for item in ax.get_xticklabels()]
+        labels[0] = 'Baseline'  # change to OrganoTrack and baseline
+        labels[1] = 'OrganoTrack'
+        ax.set_xticklabels(labels)
+        ax.set_xlim(800, 1200)
+
+        # palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        # for x, val, c in zip(xs, normFracGrowthValues, palette):
+        #     ax.scatter(x, val, alpha=0.4, color=c)
+        plt.tight_layout()
+        fig.show()
 
 def OrganoTrackVsOrganoID():
     datasets = ['EMC-preliminary', 'OrganoID-Mouse', 'OrganoID-Original']
@@ -251,7 +253,7 @@ def OrganoTrackVsOrganoID():
 
     if not analysisExists:
         datasetsDirs = GetDatasetsDirs(datasets)
-        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors)
+        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors, False, 3)
         # ViewLoadedImages(datasetsGtAndPreds)
         datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
         ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
@@ -307,7 +309,24 @@ def OrganoTrackVsOrganoID():
     #     print('h')
 
 
+def OrganoTrackBlurring():
+    datasets = ['EMC-preliminary']
+    predictors = ['OrganoTrack']
+    analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
+    analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-blurring.xlsx')
+    analysisExists = os.path.exists(analysisFile)
+    blurSizes = [3, 5, 7, 9, 11, 13, 15]
+    datasetsDirs = GetDatasetsDirs(datasets)
+    for blurSize in blurSizes:
+        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors, True, blurSize)
+        # gets GT and predictions ^
+        datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
+
+    # ViewLoadedImages(datasetsGtAndPreds)
+
+
+
 if __name__ == '__main__':
-    OrganoTrackVsOrganoID()
+    OrganoTrackVsHarmony()
 
 
