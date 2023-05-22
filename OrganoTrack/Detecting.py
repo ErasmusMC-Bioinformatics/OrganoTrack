@@ -9,6 +9,7 @@ from skimage.filters import threshold_otsu
 # temporary
 from pathlib import Path
 from OrganoTrack.Importing import ReadImages
+from OrganoTrack.Displaying import Display
 
 
 def Smoothen(image):
@@ -70,12 +71,14 @@ def CallAdaptiveThreshold(image, imgDataType, fudgeFactor, maxWindowSize):
 
     # adaptive thresholding 16.824, 16.448, 14.636 s
     adaptiveSum = np.zeros(image.shape, dtype=imgDataType)
+    displayScale = 0.5
 
     minWindowSize = 20
     for windowSize in range(minWindowSize, maxWindowSize+1, 10):
         adaptiveIter = AdaptiveThreshold(image, windowSize, fudgeFactor, imgDataType)
         adaptiveSum = np.add(adaptiveSum, adaptiveIter)
-
+        if windowSize in [20, 100, 250]:
+           Display(str(windowSize), adaptiveIter, displayScale)
     return adaptiveSum
 
 
@@ -199,46 +202,50 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
 
     segmentedImages = []
 
+    segmentedExportPath = exportPath
     if saveSegmentation:
         # Make segmentation export path
-        dateTimeNow = datetime.now()
         segmentedExportPath = exportPath / 'OrganoTrack-segmented' # + dateTimeNow.strftime('%d.%m.%Y-%H_%M_%S'))
         if not os.path.exists(segmentedExportPath):
             os.mkdir(segmentedExportPath)
             os.mkdir(segmentedExportPath / 'images')
-
+    displayScale = 0.5
     segmentedExportPath = segmentedExportPath / 'images'
-    for count, img in enumerate(images):
-
-        imgDataType = img.dtype  # image.dtype = the bitsize of the image, e.g. uint8 (0 - 255) or uint16 (0 65535)
+    for count, imgAnalysis in enumerate(images):
+        Display('1', imgAnalysis, displayScale)
+        imgDataType = imgAnalysis.dtype  # image.dtype = the bitsize of the image, e.g. uint8 (0 - 255) or uint16 (0 65535)
 
         # Converting to grayscale
-        if img.shape == 3:
-            img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        if imgAnalysis.shape == 3:
+            imgAnalysis = cv.cvtColor(imgAnalysis, cv.COLOR_BGR2GRAY)
 
-        img_blur = Smoothen(img)
+        imgAnalysis = Smoothen(imgAnalysis)
+        Display('2', imgAnalysis, displayScale)
         if extraBlur:
-            img_blur = cv.GaussianBlur(img_blur, (blurSize, blurSize), 0)
+            imgAnalysis = cv.GaussianBlur(imgAnalysis, (blurSize, blurSize), 0)
 
-        img_smoothed = OpenAndClose(img_blur, imgDataType)
+        imgAnalysis = OpenAndClose(imgAnalysis, imgDataType)
+        Display('3', imgAnalysis, displayScale)
 
-        adaptiveSum = CallAdaptiveThreshold(img_smoothed, imgDataType, fudgeFactor, maxWindowSize)
-
-        im_result = RemoveSmallNoise(adaptiveSum, minObjectSize)
-
+        imgAnalysis = CallAdaptiveThreshold(imgAnalysis, imgDataType, fudgeFactor, maxWindowSize)
+        Display('4', imgAnalysis, displayScale)
+        imgAnalysis = RemoveSmallNoise(imgAnalysis, minObjectSize)
+        Display('5', imgAnalysis, displayScale)
         # Smoothen, 0.0139, 0.0163, 0.004 s
         kernel = np.ones((3, 3), np.uint16)
-        binary = cv.morphologyEx(im_result, cv.MORPH_CLOSE, kernel)
+        imgAnalysis = cv.morphologyEx(imgAnalysis, cv.MORPH_CLOSE, kernel)
+        Display('6', imgAnalysis, displayScale)
 
         # binary = RemoveBoundaryObjects(binary)
-        filled_binary = FillHoles(binary)
+        imgAnalysis = FillHoles(imgAnalysis)
+        Display('7', imgAnalysis, displayScale)
 
-        segmentedImages.append(filled_binary)
+        segmentedImages.append(imgAnalysis)
 
 
         if saveSegmentation:
 
-            cv.imwrite(str(segmentedExportPath / imagePaths[count].name), filled_binary)
+            cv.imwrite(str(segmentedExportPath / imagePaths[count].name), imgAnalysis)
 
     return segmentedImages
 

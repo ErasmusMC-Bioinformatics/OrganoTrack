@@ -68,7 +68,8 @@ def ExportImageWithContours(ori, pred): #, imagePath, exportPath):
 
     # Draw contours on a copy of the image
     back = img.copy()
-    cv.drawContours(back, contours, -1, (46, 204, 113), 2, cv.LINE_AA)
+    cv.drawContours(image=back, contours=contours, contourIdx=-1,
+                    color=(46, 204, 113), thickness=5, lineType=cv.LINE_AA)
     alpha = 1
 
     # Combine the images
