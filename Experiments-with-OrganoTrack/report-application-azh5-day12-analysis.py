@@ -1,21 +1,44 @@
 import matplotlib.ticker
 
-from organotrack import organotrack
-from scratch import *
-from functions import display
-from segmentation import segment
+from OrganoTrack.Importing import ReadImages
+from OrganoTrack.Detecting import SegmentWithOrganoSegPy
+from OrganoTrack.Displaying import Display, ExportImageWithContours, DisplayImages
+from OrganoTrack.Filtering import RemoveBoundaryObjects
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
+from pathlib import Path
+import os
 
-originalImages, originalDFs, analysedImages, objectFeatures = organotrack(experimentInfo)
-# analysed Images = filteredImages
-# Object Features = filteredDFs
+# Directories
+imagesDir = Path('/home/franz/Documents/mep/report/results/application-tosedostat/input')
+exportDir = Path('/home/franz/Documents/mep/report/results/application-tosedostat/output')
 
-display('filterd', analysedImages[0], 0.25)
+predictionDir = exportDir / 'OrganoTrack-segmented'
+# Read images
+
+
+# Make predictions
+
+
+if not os.path.exists(predictionDir):
+
+    images, imagesPaths = ReadImages(imagesDir)
+    extraBlur = False
+    blurSize = 3
+    displaySegSteps = False
+    segParams = [0.5, 250, 150, extraBlur, blurSize, displaySegSteps]
+    saveSegParams = [True, exportDir, imagesPaths]
+    imagesInAnalysis = SegmentWithOrganoSegPy(images, segParams, saveSegParams)
+else:
+    imagesInAnalysis, imagesPaths = ReadImages(predictionDir)
+
+firstImage = imagesInAnalysis[0]
+
+image = RemoveBoundaryObjects([firstImage])
+
+DisplayImages('hello', image[0], 0.25)
 cv.waitKey(0)
-
-
 
 imageCondition = ['Ctrl',
                   'Cis 5 ',
@@ -100,5 +123,3 @@ fig3.show()
     # receive filtered images and included object DFs
 
 # plot data
-
-# /home/franz/Insync/ftapiac.96@gmail.com/Google Drive/mep/image-analysis-pipelines/OrganoTrack/code/scratch.txt

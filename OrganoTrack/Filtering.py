@@ -1,5 +1,5 @@
-from Displaying import ConvertLabelledImageToBinary
-from Measuring import CalculateRoundness
+from OrganoTrack.Displaying import ConvertLabelledImageToBinary
+from OrganoTrack.Measuring import CalculateRoundness
 from skimage.measure import regionprops_table, label
 import pandas as pd
 from skimage.util import map_array

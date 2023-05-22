@@ -221,10 +221,19 @@ def TestComputePlotTicks():
     numDatasets = 4
     plotTicks = ComputeBoxplotTicks(numMethods, numDatasets)
 
-def ComputeMethodBoxplotPositions(plotTicks, numMethods):
-    if numMethods == 1:
-        positions = plotTicks
-    return positions
+def ComputeMethodBoxplotPositions(plotTicks, numDatasets, methods, w, s):
+    boxWidth = 0.5
+    spacesBetweenBoxes = 0.1
+    numMethods = len(methods)
+    result = dict()
+    difference = np.zeros(numMethods)
+    difference[0] = -((numMethods-1)/2)*(boxWidth+spacesBetweenBoxes)
+    for i in range(1,len(difference)):
+        difference[i]=difference[i-1]+(boxWidth+spacesBetweenBoxes)
+    for i, method in enumerate(methods):
+        methodPositions = np.array([difference[i] + plotTicks[j] for j in range(numDatasets)])
+        result[method] = methodPositions
+    return result
 
 def OrganoTrackVsHarmony():  # one dataset
     datasets = ['EMC-preliminary']

@@ -4,7 +4,6 @@ import skimage.measure
 import pandas as pd
 import cv2 as cv
 import math
-from Displaying import Display
 
 def CalculateRoundness(area, perimeter):
     return 4 * math.pi * area / (perimeter ** 2)

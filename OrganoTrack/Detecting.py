@@ -72,12 +72,12 @@ def CallAdaptiveThreshold(image, imgDataType, fudgeFactor, maxWindowSize):
     # adaptive thresholding 16.824, 16.448, 14.636 s
     adaptiveSum = np.zeros(image.shape, dtype=imgDataType)
     displayScale = 0.5
-
+    displayStep = False
     minWindowSize = 20
     for windowSize in range(minWindowSize, maxWindowSize+1, 10):
         adaptiveIter = AdaptiveThreshold(image, windowSize, fudgeFactor, imgDataType)
         adaptiveSum = np.add(adaptiveSum, adaptiveIter)
-        if windowSize in [20, 100, 250]:
+        if windowSize in [20, 100, 250] and displayStep:
            Display(str(windowSize), adaptiveIter, displayScale)
     return adaptiveSum
 
@@ -190,11 +190,12 @@ def FillHoles(image):
 
 
 def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParameters):
-    fudgeFactor, maxWindowSize, minObjectSize, extraBlur, blurSize = segmentationParameters[0], \
-                                                                     segmentationParameters[1],\
-                                                                     segmentationParameters[2],\
-                                                                     segmentationParameters[3],\
-                                                                     segmentationParameters[4]
+    fudgeFactor, maxWindowSize, minObjectSize, extraBlur, blurSize, displaySegStep = segmentationParameters[0], \
+                                                                                     segmentationParameters[1],\
+                                                                                     segmentationParameters[2],\
+                                                                                     segmentationParameters[3],\
+                                                                                     segmentationParameters[4], \
+                                                                                     segmentationParameters[5]
 
     saveSegmentation, exportPath, imagePaths = saveSegmentationParameters[0],\
                                                saveSegmentationParameters[1], \
@@ -212,7 +213,8 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
     displayScale = 0.5
     segmentedExportPath = segmentedExportPath / 'images'
     for count, imgAnalysis in enumerate(images):
-        Display('1', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('1', imgAnalysis, displayScale)
         imgDataType = imgAnalysis.dtype  # image.dtype = the bitsize of the image, e.g. uint8 (0 - 255) or uint16 (0 65535)
 
         # Converting to grayscale
@@ -220,25 +222,31 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
             imgAnalysis = cv.cvtColor(imgAnalysis, cv.COLOR_BGR2GRAY)
 
         imgAnalysis = Smoothen(imgAnalysis)
-        Display('2', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('2', imgAnalysis, displayScale)
         if extraBlur:
             imgAnalysis = cv.GaussianBlur(imgAnalysis, (blurSize, blurSize), 0)
 
         imgAnalysis = OpenAndClose(imgAnalysis, imgDataType)
-        Display('3', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('3', imgAnalysis, displayScale)
 
         imgAnalysis = CallAdaptiveThreshold(imgAnalysis, imgDataType, fudgeFactor, maxWindowSize)
-        Display('4', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('4', imgAnalysis, displayScale)
         imgAnalysis = RemoveSmallNoise(imgAnalysis, minObjectSize)
-        Display('5', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('5', imgAnalysis, displayScale)
         # Smoothen, 0.0139, 0.0163, 0.004 s
         kernel = np.ones((3, 3), np.uint16)
         imgAnalysis = cv.morphologyEx(imgAnalysis, cv.MORPH_CLOSE, kernel)
-        Display('6', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('6', imgAnalysis, displayScale)
 
         # binary = RemoveBoundaryObjects(binary)
         imgAnalysis = FillHoles(imgAnalysis)
-        Display('7', imgAnalysis, displayScale)
+        if displaySegStep:
+            Display('7', imgAnalysis, displayScale)
 
         segmentedImages.append(imgAnalysis)
 
