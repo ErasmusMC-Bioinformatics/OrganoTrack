@@ -11,7 +11,7 @@ import skimage
 import numpy as np
 
 
-def PlotRegions(binaryImage):
+def PlotMeasurements(binaryImage, measure):
     pass
     # if i == 0:  # area first
     #     labeledImages = [Label(image) for image in imagesInAnalysis]
