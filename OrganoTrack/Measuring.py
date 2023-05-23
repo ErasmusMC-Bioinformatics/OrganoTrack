@@ -55,7 +55,7 @@ def AnalyzeAndExport(images: np.ndarray, path: Path):
             data[propertyName].to_excel(writer, sheet_name=propertyName)
 
 if __name__ == '__main__':
-    Test_MeasureMorphometry()
+    print(CalculateRoundness(43185, 1252.35))
 
     # display('OrganoTrack', image, 0.25)
     # cv.waitKey(0)

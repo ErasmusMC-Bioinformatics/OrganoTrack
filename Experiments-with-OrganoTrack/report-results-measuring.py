@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import skimage
+from skimage import measure, filters, morphology
+import plotly
+import plotly.express as px
+import plotly.graph_objects as go
 
 def Label(image):
     labeled = skimage.measure.label(image)
@@ -64,20 +68,15 @@ def PlotPropertyBoxplot(binaryImage, property, unit):
     PlotBoxplotWithJitter(propertyDF, property, unit)
 
 
-def PlotWithPlotly():
-    img = data.coins()
-    # Binary image, post-process the binary mask and compute labels
-    threshold = filters.threshold_otsu(img)
-    mask = img > threshold
-    mask = morphology.remove_small_objects(mask, 50)
-    mask = morphology.remove_small_holes(mask, 50)
-    labels = measure.label(mask)
+def PlotWithPlotly(original, binary):
+    img = original
+    labels = Label(binary)
 
     fig = px.imshow(img, binary_string=True)
     fig.update_traces(hoverinfo='skip')  # hover is only for label info
 
     props = measure.regionprops(labels, img)
-    properties = ['area', 'eccentricity', 'perimeter', 'intensity_mean']
+    properties = ['area', 'eccentricity', 'solidity', 'perimeter']
 
     # For each label, add a filled scatter trace for its contour,
     # and display the properties of the label in the hover of this trace.
@@ -94,7 +93,7 @@ def PlotWithPlotly():
             hovertemplate=hoverinfo, hoveron='points+fills'))
 
     plotly.io.show(fig)
-    pass
+
 
 
 # Set directories
@@ -119,10 +118,10 @@ else:
 # Display overlays
 for i, (raw, prediction) in enumerate(zip(rawImages, predictedImages)):
     overlayed = ExportImageWithContours(raw, prediction)
-    Display(str(i), overlayed, 0.5)
+    Display(str(i), overlayed, 1)
+    # PlotWithPlotly(raw, prediction)
 
 
-PlotPropertyBoxplot(predictedImages[3], 'area', 'pixels')
+# PlotPropertyBoxplot(predictedImages[3], 'area', 'pixels')
 
-PlotWithPlotly()
 cv.waitKey(0)
