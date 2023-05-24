@@ -11,6 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import openpyxl
+from scipy.stats import kstest
 
 '''
     With this file, boxplots can be generated, comparing the segmentation accuracies for different methods on different
@@ -238,7 +239,7 @@ def ComputeMethodBoxplotPositions(plotTicks, numDatasets, methods, w, s):
 def OrganoTrackVsHarmony():  # one dataset
     datasets = ['EMC-preliminary']
     predictors = ['Harmony', 'OrganoTrack']
-    analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
+    analysisDir = Path('/home/franz/Documents/mep/report/results/segmentation-analysis')
     analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
     analysisExists = os.path.exists(analysisFile)
     toBlur = False
@@ -261,13 +262,15 @@ def OrganoTrackVsHarmony():  # one dataset
     boxWidth = 100
     plt.rcParams.update({'font.size': 15})
 
-
+    data = []
     for measure, index in zip(measures, measureIndex):
         fig, ax = plt.subplots()
         for dataset in datasets:
             data1 = np.array(datasetsPredictionScores[dataset]['Harmony'][:, index]).T
+            data.append(data1)
             ax.boxplot(data1, positions=x-100, showfliers=False, widths=boxWidth) # one box plot corresponds to one method, not one dataset
             data2 = np.array(datasetsPredictionScores[dataset]['OrganoTrack'][:, index]).T
+            data.append(data2)
             ax.boxplot(data2, positions=x+100,
                        showfliers=False, widths=boxWidth)   # one box plot corresponds to one method, not one dataset
             # fill with colors, https://matplotlib.org/stable/gallery/statistics/boxplot_color.html
@@ -283,12 +286,14 @@ def OrganoTrackVsHarmony():  # one dataset
         labels[1] = 'OrganoTrack'
         ax.set_xticklabels(labels)
         ax.set_xlim(800, 1200)
-
-        # palette = ['b', 'g', 'r', 'c', 'm', 'k']
-        # for x, val, c in zip(xs, normFracGrowthValues, palette):
-        #     ax.scatter(x, val, alpha=0.4, color=c)
+        valuesJitter = [np.random.normal(900, 10, 5), np.random.normal(1100, 10, 5)]
+        palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        for x, val, c in zip(valuesJitter, data, palette):
+            ax.scatter(x, val, alpha=0.4, color=c)
         plt.tight_layout()
         fig.show()
+        print(kstest(data[0], data[1]))  # How likely is it that we would see two sets of samples like this if they were drawn from the same (but unknown) probability distribution?
+        print('f')
 
 def OrganoTrackVsOrganoID():
     datasets = ['EMC-preliminary', 'OrganoID-Mouse', 'OrganoID-Original']
@@ -376,6 +381,6 @@ def OrganoTrackBlurring():
 
 
 if __name__ == '__main__':
-    TestComputePlotTicks()
+    OrganoTrackVsHarmony()
 
 
