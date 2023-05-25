@@ -217,14 +217,12 @@ def LoadPredictionScoreAnalysis(analysisFilePath):
         methodIndeces = list(firstRow.notna()[firstRow.notna() == True].index)
 
         for i, method in enumerate(methods):
-            methodPredictions = oneDatasetMethodsPredictionsDf.iloc[2:, methodIndeces[i]+1:methodIndeces[i]+4].to_numpy()
+            methodPredictions = np.array(oneDatasetMethodsPredictionsDf.iloc[2:, methodIndeces[i]+1:methodIndeces[i]+4], dtype=np.float64)
             oneDatasetMethodsPredictions[method] = methodPredictions
 
         datasetsPredictionScores[dataset] = oneDatasetMethodsPredictions
 
     return datasetsPredictionScores
-
-
 
 def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     datasets = list(datasetsPredictionScores.keys())
@@ -232,7 +230,7 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     measures = ['F1', 'IOU', 'Dice']
     measureIndex = [0, 1, 2]
 
-    plt.rcParams.update({'font.size': 15})
+    plt.rcParams.update({'font.size': 20})
 
     # Plotting colours
     colours = list(mcolors.CSS4_COLORS.keys())
