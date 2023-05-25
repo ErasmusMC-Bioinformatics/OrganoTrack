@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 from pathlib import Path
-from OrganoTrack.Displaying import Display
+from Displaying import Display
 
 def BinariseTo1(predictionImage, groundTruthImage):
 
@@ -15,14 +15,30 @@ def BinariseTo1(predictionImage, groundTruthImage):
 
     return predictionBinary_1, groundTruthBinary_1
 
+def ColouriseImage(image, colour):
+    image = image.astype(np.uint8)
+    colourCodes = {'blue': (219, 152, 52), 'orange': (34, 126, 230), 'gray': (199, 195, 189)}
 
+    _, image = cv.threshold(image, 0, 255, cv.THRESH_BINARY)
+
+    if len(image.shape) != 3:
+        image = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
+    else:
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+    image[np.all(image == (255, 255, 255), axis=-1)] = colourCodes[colour]
+
+    return image
 
 def EvaluateSegmentationAccuracy(predictionImage, groundTruthImage):
+    displayScale = 0.5
+    _, groundTruthImage = cv.threshold(groundTruthImage, 10, 255, cv.THRESH_BINARY)
 
     predictionBinary_1, groundTruthBinary_1 = BinariseTo1(predictionImage, groundTruthImage)
 
     # Count true positives, false positives and false negatives
     sumImage = cv.add(predictionBinary_1, groundTruthBinary_1)  # 0 or 1 or 2
+    truePositiveImage = cv.bitwise_and(predictionImage, groundTruthImage)
+
     truePositiveCount = np.count_nonzero(sumImage == 2)
 
     orImage = cv.bitwise_or(predictionBinary_1, groundTruthBinary_1)  # 0 or 1, not 2
@@ -38,32 +54,22 @@ def EvaluateSegmentationAccuracy(predictionImage, groundTruthImage):
     iouScore = 100*truePositiveCount/np.count_nonzero(orImage == 1)
     diceScore = 100*2*truePositiveCount/(np.count_nonzero(predictionBinary_1 == 1) + np.count_nonzero(groundTruthBinary_1 == 1))
     scores = np.array([f1Score, iouScore, diceScore])
-    # Convert ground truth image to RGB green
-    groundTruthRGB = cv.cvtColor(groundTruthImage, cv.COLOR_GRAY2RGB)
-    _, groundTruthRGB = cv.threshold(groundTruthRGB, 50, 255, cv.THRESH_BINARY)
-    groundTruthRGB[np.all(groundTruthRGB == (255, 255, 255), axis=-1)] = (0, 255, 0)
 
-    # Convert prediction image to RGB
-    predictionRGB = cv.cvtColor(predictionImage, cv.COLOR_GRAY2RGB)
+    truePositiveColour = ColouriseImage(truePositiveImage, 'blue')
+    falsePositiveColour = ColouriseImage(255*falsePositiveImage, 'orange')
+    falseNegativeColour = ColouriseImage(255*falseNegativeImage, 'gray')
 
-    # Generating overlay
-    alpha = 0.5
-    beta = 1 - alpha
-    overlay = cv.addWeighted(predictionRGB, alpha, groundTruthRGB, beta, 0.0)
-
+    overlay = cv.addWeighted(truePositiveColour, 1, falsePositiveColour, 1, 0)
+    overlay = cv.addWeighted(overlay, 1, falseNegativeColour, 1, 0)
 
     return scores, overlay
 
 def Test_Evaluate():
-    gtImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/annotated/annotations/images/d0r1t0_GT.png'
+    gtImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/groundTruth/images/d0r1t3_GT.png'
     groundTruthImage = cv.imread(gtImageDir, cv.IMREAD_GRAYSCALE)
 
-    predImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/segmented-10.05.2023-15_03_26/d0r1t0.tiff'
+    predImageDir = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/OrganoTrack-segmented/images/d0r1t3.tiff'
     predImage = cv.imread(predImageDir, cv.IMREAD_GRAYSCALE)
-
-    exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions')
-    predImagePath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset/predictions/segmented-10.05.2023-15_03_26/d0r1t0.tiff')
-    saveImgOverlay = [True, exportPath, predImagePath]
 
     scores, overlay = EvaluateSegmentationAccuracy(predImage, groundTruthImage)
 
