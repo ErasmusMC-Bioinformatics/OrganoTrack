@@ -87,15 +87,19 @@ def barplot_annotate_brackets(num1, num2, data, center, height, yerr=None, dh=.0
     plt.text(*mid, text, **kwargs)
 
 def GetDatasetsDirs(datasets):
-    datasetDirs = {'EMC-preliminary': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset'),
-                   'OrganoID-Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids'),
-                   'OrganoID-Original': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/OriginalData')}
+    datasetDirs = {'Bladder cancer': Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/training-dataset/preliminary-gt-dataset'),
+                   'Mouse': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/MouseOrganoids'),
+                   'Salivary ACC': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/ACCOrganoids'),
+                   'Colon': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/ColonOrganoids'),
+                   'Lung': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/LungOrganoids'),
+                   'PDAC': Path('/home/franz/Documents/mep/data/published-data/OrganoID-data/combinedForOrganoTrackTesting/PDACOrganoids')}
+
     datasetsDirs = dict()
     for dataset in datasets:
         datasetsDirs[dataset] = datasetDirs[dataset]
     return datasetsDirs
 
-def LoadImages(datasetsDirs, predictionMethods, extraBlur=False, blurSize=3):
+def LoadImages(datasetsDirs, predictionMethods, extraOrganoTrackBlur=False, blurSize=3):
 
     datasetsGroundTruthsAndPredictions = dict()
 
@@ -112,7 +116,7 @@ def LoadImages(datasetsDirs, predictionMethods, extraBlur=False, blurSize=3):
             if method == 'OrganoTrack' and not os.path.exists(predictionDir):
                 originalImagesDir = datasetDir / 'original'
                 originalImages, predictionImagesNames = ReadImages(originalImagesDir)
-                segParams = [0.5, 250, 150, extraBlur, blurSize]
+                segParams = [0.5, 250, 150, extraOrganoTrackBlur, blurSize]
                 exportPath = datasetDir / 'predictions'
                 saveSegParams = [True, exportPath, predictionImagesNames]
                 predictionImages = SegmentWithOrganoSegPy(originalImages, segParams, saveSegParams)
@@ -135,14 +139,21 @@ def ViewLoadedImages(datasetsGtAndPreds):
                 cv.imshow(f'{dataset}, {method},{i}', image)
     cv.waitKey(0)
 
+def CreateDirectoryToStoreOverlays(datasetDirectory, predictionMethod):
+    exportPath = datasetDirectory / 'predictions'
+    overlayExportPath = exportPath / (predictionMethod + '-overlay')
+    if not os.path.exists(overlayExportPath):
+        os.mkdir(overlayExportPath)
+    return overlayExportPath
 
-def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictionMethods):
+def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirectories, predictionMethods):
 
-    datasetsSegScoresWithDiffMethods = dict()
+    datasetsSegmentationScoresWithDiffMethods = dict()
 
-    for dataset in list(datasetsDirs.keys()):
-        segScoresWithDiffMethods = dict()
-        datasetDir = datasetsDirs[dataset]
+    for dataset in list(datasetsDirectories.keys()):
+        print(f'Evaluating the {dataset} dataset.')
+        oneDatasetSegmentationScoresWithDiffMethods = dict()
+        datasetDirectory = datasetsDirectories[dataset]
         groundTruthImages = datasetsGtAndPreds[dataset]['groundTruth'][0]
 
         for method in predictionMethods:
@@ -150,10 +161,7 @@ def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictionMethod
             predictedImagesNames = datasetsGtAndPreds[dataset][method][1]
 
             # Create directory to store overlays
-            exportPath = datasetDir / 'predictions'
-            overlayExportPath = exportPath / (method + '-overlay')
-            if not os.path.exists(overlayExportPath):
-                os.mkdir(overlayExportPath)
+            overlayExportPath = CreateDirectoryToStoreOverlays(datasetDirectory, method)
 
             segmentationScores = np.zeros((len(groundTruthImages), 3))
 
@@ -162,15 +170,16 @@ def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictionMethod
                 segmentationScores[i], overlay = EvaluateSegmentationAccuracy(prediction, groundTruth)
                 SaveOverlay(overlay, overlayExportPath, predictedImagesNames[i])
 
-            segScoresWithDiffMethods[method] = segmentationScores
-        segScoresWithDiffMethods['imageNames'] = predictedImagesNames
+            oneDatasetSegmentationScoresWithDiffMethods[method] = segmentationScores
+        oneDatasetSegmentationScoresWithDiffMethods['imageNames'] = predictedImagesNames
 
-        datasetsSegScoresWithDiffMethods[dataset] = segScoresWithDiffMethods
+        datasetsSegmentationScoresWithDiffMethods[dataset] = oneDatasetSegmentationScoresWithDiffMethods
 
-    return datasetsSegScoresWithDiffMethods
+    return datasetsSegmentationScoresWithDiffMethods
 
 def ExportPredictionScores(datasetsPredictionScores, analysisFileName, predictionMethods):
     # Exporting segmentation accuracies
+    print(f'Exporting prediction scores to {analysisFileName}.')
     measureCount = 3
     datasets = list(datasetsPredictionScores.keys())
 
@@ -299,7 +308,7 @@ def ComputeMethodBoxplotPositions(plotTicks, numDatasets, methods, w, s):
     return result
 
 def OrganoTrackVsHarmony():  # one dataset
-    datasets = ['EMC-preliminary']
+    datasets = ['EMC-cisplatin']
     predictors = ['Harmony', 'OrganoTrack']
     analysisDir = Path('/home/franz/Documents/mep/report/results/segmentation-analysis')
     analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
@@ -361,7 +370,7 @@ def OrganoTrackVsHarmony():  # one dataset
         print(ttest_ind(dataA, dataB))  # How likely is it that we would see two sets of samples like this if they were drawn from the same (but unknown) probability distribution?
 
 def OrganoTrackVsOrganoID():
-    datasets = ['EMC-preliminary', 'OrganoID-Mouse', 'OrganoID-Original']
+    datasets = ['EMC-cisplatin', 'OrganoID-Mouse', 'OrganoID-Original']
     predictors = ['OrganoTrack', 'OrganoID']
     analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
 
@@ -429,7 +438,7 @@ def OrganoTrackVsOrganoID():
 
 
 def OrganoTrackBlurring():
-    datasets = ['EMC-preliminary']
+    datasets = ['EMC-cisplatin']
     predictors = ['OrganoTrack']
     analysisDir = Path('/home/franz/Documents/mep/results/segmentation-analysis')
     analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-blurring.xlsx')
@@ -443,9 +452,37 @@ def OrganoTrackBlurring():
 
     # ViewLoadedImages(datasetsGtAndPreds)
 
+def CreateAnalysisFileName(datasetsNames, predictorsNames, analysisDir):
+
+    modifieddatasetsNames = [name.replace(' ', '-') if ' ' in name else name for name in datasetsNames]
+    datasetsCombinedString = '_'.join(modifieddatasetsNames) + '-datasets'
+    predictorsCombinedString = '_'.join(predictorsNames) + '-methods'
+    analysisFilePath = analysisDir / (datasetsCombinedString + '-' + predictorsCombinedString + '.xlsx')
+
+    return analysisFilePath
+
+def OrganoTrackVsOrganoIDvsFarhan():
+    # To compare fairly with OrganoSeg, you'll need to remove all border objects from all other images.
+    datasets = ['Bladder cancer', 'Mouse', 'Salivary ACC', 'Colon', 'Lung', 'PDAC']
+    predictors = ['OrganoTrack', 'OrganoID', 'Farhan1', 'Farhan2']
+    analysisDir = Path('/home/franz/Documents/mep/report/results/segmentation-analysis')
+
+    analysisFilePath = CreateAnalysisFileName(datasets, predictors, analysisDir)
+
+    analysisExists = os.path.exists(analysisFilePath)
+
+    if not analysisExists:
+        datasetsDirs = GetDatasetsDirs(datasets)
+        datasetsGtAndPreds = LoadImages(datasetsDirs, predictors, extraOrganoTrackBlur=False, blurSize=3)
+        datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
+        ExportPredictionScores(datasetsPredictionScores, analysisFilePath, predictors)
+    else:
+        datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFilePath)
+
+    PlotPredictionAccuracies(datasetsPredictionScores, predictors)
 
 
 if __name__ == '__main__':
-    OrganoTrackVsHarmony()
+    OrganoTrackVsOrganoIDvsFarhan()
 
 
