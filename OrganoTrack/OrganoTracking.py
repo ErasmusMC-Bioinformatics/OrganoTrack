@@ -1,10 +1,10 @@
 import cv2 as cv
-from Displaying import Mask
+from OrganoTrack.Displaying import Mask
 import skimage.measure
-from Importing import ReadImages
+from OrganoTrack.Importing import ReadImages
 import numpy as np
-from Tracking import Track, Inverse, Overlap
-from ImageHandling import DrawRegionsOnImages
+from OrganoTrack.Tracking import Track, Inverse, Overlap
+from OrganoTrack.ImageHandling import DrawRegionsOnImages
 from pathlib import Path
 from PIL import Image
 

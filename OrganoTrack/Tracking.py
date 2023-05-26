@@ -1,15 +1,15 @@
 import cv2 as cv
-from Displaying import Mask
+from OrganoTrack.Displaying import Mask
 import skimage.measure
-from Importing import ReadImages
+from OrganoTrack.Importing import ReadImages
 import numpy as np
-from ImageHandling import DrawRegionsOnImages
+from OrganoTrack.ImageHandling import DrawRegionsOnImages
 from pathlib import Path
 from PIL import Image
 from typing import List, Optional, Callable
 from skimage.measure._regionprops import regionprops, RegionProperties
 from scipy.optimize import linear_sum_assignment
-from HelperFunctions import printRep
+from OrganoTrack.HelperFunctions import printRep
 
 
 class OrganoidTrack:
@@ -41,7 +41,7 @@ def LabelAndStack(images):
 
 # Function adopted from OrganoID (Matthews et al. 2022 PLOS Compt Biol)
 def SaveImages(data, suffix, pilImages, outputPath, fileNames):
-    from ImageHandling import ConvertImagesToPILImageStacks, SavePILImageStack
+    from OrganoTrack.ImageHandling import ConvertImagesToPILImageStacks, SavePILImageStack
     stacks = ConvertImagesToPILImageStacks(data, pilImages)
     # stacks is a List of 3D np arrays
 

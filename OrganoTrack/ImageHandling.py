@@ -7,7 +7,7 @@ import skimage.color
 import skimage.filters
 import skimage.measure
 import math
-from HelperFunctions import printRep
+from OrganoTrack.HelperFunctions import printRep
 
 
 def ComputeOutline(image: np.ndarray):

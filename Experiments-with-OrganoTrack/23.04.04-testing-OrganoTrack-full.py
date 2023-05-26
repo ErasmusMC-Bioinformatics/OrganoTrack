@@ -18,31 +18,32 @@ saveSegParams = [True, exportPath]
 segmentedPaths = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/segmented')
 
 # Selection of organoids
-filterBoundary = True
-filterOrganoids = True
+filterBoundary = False
+filterOrganoids = False
 filterBy = ['area', 450, 'roundness', 0.5]  # minimum filter
 
 
 # Track organoids
-trackOrgs = True
+trackOrgs = False
 timePoints = 4
 overlayTracking = True
 
 # Measure organoids
-exportOrgMeasures = True
+exportOrgMeasures = False
+numberOfWellFields = 25
 morphPropertiesToMeasure = ['area', 'roundness', 'eccentricity', 'solidity']
 
 # Handle plots
-handlePlotting = False
-loadExportedData = False
-exportedDataPath = Path('G:/My Drive/mep/image-analysis-pipelines/OrganoTrack/trackedMeasures.xlsx')
+handlePlotting = True
+loadExportedData = True
+exportedDataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
 
 
 RunOrganoTrack(dataPath, exportPath, checkResults,
                segment, segParams, saveSegParams, segmentedPaths,
                filterBoundary, filterOrganoids, filterBy,
                trackOrgs, timePoints, overlayTracking,
-               exportOrgMeasures, morphPropertiesToMeasure,
+               exportOrgMeasures, numberOfWellFields, morphPropertiesToMeasure,
                handlePlotting, loadExportedData, exportedDataPath)
 
 

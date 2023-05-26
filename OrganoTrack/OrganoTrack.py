@@ -1,17 +1,15 @@
-from Importing import ReadImages, ReadPlateLayout, ReadImage, UpdatePlateLayoutWithImageNames
-from Detecting import SegmentWithOrganoSegPy
-from Exporting import SaveData, ExportImageStackMeasurements, ExportSingleImageMeasurements
-from Filtering import FilterByFeature, RemoveBoundaryObjects
-from Displaying import DisplayImages, Display, ConvertLabelledImageToBinary, displayingTrackedSet, ExportImageWithContours
-from Tracking import track, SaveImages, MakeDirectory, stack, LabelAndStack, Label
-from Measuring import MeasureMorphometry, CalculateRoundness
+from OrganoTrack.Importing import ReadImages, ReadPlateLayout, UpdatePlateLayoutWithImageNames
+from OrganoTrack.Detecting import SegmentWithOrganoSegPy
+from OrganoTrack.Exporting import SaveData, ExportImageStackMeasurements, ExportSingleImageMeasurements
+from OrganoTrack.Filtering import FilterByFeature, RemoveBoundaryObjects
+from OrganoTrack.Displaying import DisplayImages, Display, ConvertLabelledImageToBinary, displayingTrackedSet, ExportImageWithContours, Mask
+from OrganoTrack.Tracking import track, SaveImages, MakeDirectory, stack, LabelAndStack, Label
 
 # temporary imports
 import cv2 as cv
-from Displaying import Mask
 from pathlib import Path
 from PIL import Image
-from ImageHandling import DrawRegionsOnImages
+from OrganoTrack.ImageHandling import DrawRegionsOnImages
 import numpy as np
 import pandas as pd
 import skimage.measure
@@ -231,7 +229,7 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
 
             # Create an overlay and output it
             for i in range(len(trackedSets)):  # for each timelapse set
-                overlayImages = DrawRegionsOnImages(trackedSets[i], stack(maskedImages[i]), (255, 255, 255), 16, (0, 255, 0))  # np.array, likely 3D
+                overlayImages = DrawRegionsOnImages(trackedSets[i], stack(maskedImages[i]), (255, 255, 255), 50, (0, 255, 0))  # np.array, likely 3D
                 Output('Overlay', overlayImages, i)
                 print('tracking')
 
@@ -281,6 +279,25 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
                 propertyDFsWithoutNaNs.append(a[~a.isnull().any(axis=1)])
             propertyAndConditionDFsWithoutNaNs.append(propertyDFsWithoutNaNs)
 
+
+        # Plotting size, roundness, eccentricity, solidity tracks for the 8 organoids
+        sizeDF = propertyAndConditionDFsWithoutNaNs[0][6]
+        sizeDFData = sizeDF.iloc[:, 1:]
+        sizeDF = sizeDF.reset_index()
+        sizeDFData = sizeDFData.values.astype(float)
+
+        plt.rcParams.update({'font.size': 15})
+        fig, ax = plt.subplots()
+        timepoints = np.arange(4)
+        for i in range(sizeDFData.shape[0]):
+            ax.plot(timepoints, sizeDFData[i, :], label=f'Object {sizeDF.iloc[i,1]}')
+        ax.set_xticks([0, 1, 2, 3])
+        ax.set_xticklabels([0, 1, 3, 6])
+        ax.set_xlabel('Time (days)')
+        ax.set_ylabel('Size (px)')
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
 
         # Calculating fractional growth
         areaDFs = propertyAndConditionDFsWithoutNaNs[0]

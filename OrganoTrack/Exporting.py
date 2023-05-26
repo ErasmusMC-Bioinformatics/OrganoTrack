@@ -4,7 +4,7 @@ import cv2 as cv
 import pandas as pd
 import numpy as np
 from skimage.measure import regionprops
-from Measuring import CalculateRoundness
+from OrganoTrack.Measuring import CalculateRoundness
 
 
 def SaveData(exportPath, images, imagePaths):
