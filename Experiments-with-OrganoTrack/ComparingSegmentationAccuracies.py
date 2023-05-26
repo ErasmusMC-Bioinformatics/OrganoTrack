@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import openpyxl
 from scipy.stats import ttest_ind
+import matplotlib.patches as mpatches
 
 '''
     With this file, boxplots can be generated, comparing the segmentation accuracies for different methods on different
@@ -233,77 +234,98 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     plt.rcParams.update({'font.size': 20})
 
     # Plotting colours
-    colours = list(mcolors.CSS4_COLORS.keys())
-    # chosenPoolOfColours = colours['blue']
+    colourCodes = mcolors.CSS4_COLORS
+
+    methodColours = {'OrganoTrack': 'blue',
+                     'OrganoID': 'red',
+                     'Farhan1': 'green',
+                     'Farhan2': 'yellow'}
 
 
     for segAccuracyMeasure, index in zip(measures, measureIndex):
         plotTicks, boxplotPositionsPerMethod = ComputeBoxplotTicksAndPositions(predictionMethods, len(datasets))
-        fig, ax = plt.subplots()
-
-        dataAcrossDatasetsAndMethods = []
+        fig, ax = plt.subplots(figsize=(20, 6))
+        legend_patches = []
 
         for method in predictionMethods:
-            for dataset in datasets:
-                dataAcrossDatasetsAndMethods.append(datasetsPredictionScores[dataset][method][:, index])
+            SegmentationAccuracyForOneMethodAcrossDatasets = []
 
-        # dataAcrossDatasetsAndMethods = np.array(dataAcrossDatasetsAndMethods).T
-        ax.boxplot(dataAcrossDatasetsAndMethods, widths=0.5)  # one box plot corresponds to one method, not one dataset
+            for dataset in datasets:
+                SegmentationAccuracyForOneMethodAcrossDatasets.append(datasetsPredictionScores[dataset][method][:, index])
+
+            ax.boxplot(SegmentationAccuracyForOneMethodAcrossDatasets, positions=boxplotPositionsPerMethod[method],
+                       patch_artist=True, boxprops=dict(facecolor=methodColours[method]))
+
+            legend_patch = mpatches.Patch(facecolor=methodColours[method], label=method)
+            legend_patches.append(legend_patch)
 
         ax.set_ylabel(f'{segAccuracyMeasure} score')
-        ax.set_xlabel('Datasets')
+        ax.set_xlabel('Organoid datasets')
         ax.set_ylim(0, 100)
+        ax.set_xticks(plotTicks)
+        ax.set_xticklabels(datasets)
+        ax.legend(handles=legend_patches, bbox_to_anchor=(0.1, 0.5))
         plt.tight_layout()
+        # plt.legend()
         fig.show()
 
 
-def ComputeBoxplotTicksAndPositions(methods, numDatasets):
+def ComputeBoxplotTicksAndPositions(methods, numberOfDatasets):
 
-    boxplotPositionsPerMethod = dict()
-    numMethods = len(methods)
+    positionsOfBoxplotsForEachMethod = dict()
+    numberOfMethods = len(methods)
 
-    plotTicks = ComputeBoxplotTicks(numMethods, numDatasets)
+    boxplotCharacteristics = {'distanceToFirstBoxFromYAxis': 2, 'boxWidth': 0.5, 'spaceBetweenBoxes': 0.5}
 
-    for method in methods:
-        positionsArray = ComputeMethodBoxplotPositions(plotTicks, numMethods)
-        boxplotPositionsPerMethod[method] = positionsArray
+    boxplotXAxisTicks = ComputeBoxplotXAxisTicks(numberOfMethods, numberOfDatasets, boxplotCharacteristics)
 
-    return plotTicks, boxplotPositionsPerMethod
+    boxplotsPositionsForAllMethods = ComputeBoxplotPositionsForAllMethods(boxplotXAxisTicks, numberOfDatasets, methods,
+                                                          boxplotCharacteristics)
+
+    return boxplotXAxisTicks, boxplotsPositionsForAllMethods
 
 
-def ComputeBoxplotTicks(numMethods, numDatasets):
-    startingLength = 0.5
-    boxWidth = 0.5
-    spacesBetweenBoxes = 0.1
+def ComputeBoxplotXAxisTicks(numMethods, numDatasets, boxplotCharacteristics):
+    distanceToFirstBoxFromYAxis = boxplotCharacteristics['distanceToFirstBoxFromYAxis']
+    boxWidth = boxplotCharacteristics['boxWidth']
+    spaceBetweenBoxes = boxplotCharacteristics['spaceBetweenBoxes']
 
-    startingTick = startingLength + (numMethods/2)*boxWidth + ((numMethods-1)/2)*spacesBetweenBoxes
-    additionTick = startingLength + numMethods*boxWidth + (numMethods-1)*spacesBetweenBoxes
+    firstTick = distanceToFirstBoxFromYAxis + (numMethods/2)*boxWidth + ((numMethods-1)/2)*spaceBetweenBoxes
+    distanceBetweenTicks = distanceToFirstBoxFromYAxis + numMethods*boxWidth + (numMethods-1)*spaceBetweenBoxes
 
-    plotTicks = np.zeros(numDatasets)
-    plotTicks[0] = startingTick
-    for i in range(1, len(plotTicks)):
-        plotTicks[i] = plotTicks[i-1] + additionTick
+    boxplotXAxisTicks = np.zeros(numDatasets)
+    boxplotXAxisTicks[0] = firstTick
+    for i in range(1, len(boxplotXAxisTicks)):
+        boxplotXAxisTicks[i] = boxplotXAxisTicks[i-1] + distanceBetweenTicks
 
-    return plotTicks
+    return boxplotXAxisTicks
 
 def TestComputePlotTicks():
+
+    boxplotCharacteristics = {'distanceToFirstBoxFromYAxis': 20, 'boxWidth': 2, 'spaceBetweenBoxes': 0.5}
     numMethods = 3
     numDatasets = 4
-    plotTicks = ComputeBoxplotTicks(numMethods, numDatasets)
+    plotTicks = ComputeBoxplotXAxisTicks(numMethods, numDatasets, boxplotCharacteristics)
 
-def ComputeMethodBoxplotPositions(plotTicks, numDatasets, methods, w, s):
-    boxWidth = 0.5
-    spacesBetweenBoxes = 0.1
-    numMethods = len(methods)
-    result = dict()
-    difference = np.zeros(numMethods)
-    difference[0] = -((numMethods-1)/2)*(boxWidth+spacesBetweenBoxes)
-    for i in range(1,len(difference)):
-        difference[i]=difference[i-1]+(boxWidth+spacesBetweenBoxes)
+def ComputeBoxplotPositionsForAllMethods(plotTicks, numDatasets, methods, boxplotCharacteristics):
+    boxWidth = boxplotCharacteristics['boxWidth']
+    spaceBetweenBoxes = boxplotCharacteristics['spaceBetweenBoxes']
+
+    numberOfMethods = len(methods)
+    boxplotPositionsForAllMethods = dict()
+
+    distanceToMethodBoxplotFromXAxisTick = np.zeros(numberOfMethods)
+    distanceToMethodBoxplotFromXAxisTick[0] = -((numberOfMethods-1)/2)*(boxWidth+spaceBetweenBoxes)
+
+    for i in range(1, len(distanceToMethodBoxplotFromXAxisTick)):
+        distanceToMethodBoxplotFromXAxisTick[i] = distanceToMethodBoxplotFromXAxisTick[i-1]+(boxWidth+spaceBetweenBoxes)
+
     for i, method in enumerate(methods):
-        methodPositions = np.array([difference[i] + plotTicks[j] for j in range(numDatasets)])
-        result[method] = methodPositions
-    return result
+        boxplotPositionsForOneMethod = np.array([distanceToMethodBoxplotFromXAxisTick[i] + plotTicks[j]
+                                                 for j in range(numDatasets)])
+        boxplotPositionsForAllMethods[method] = boxplotPositionsForOneMethod
+
+    return boxplotPositionsForAllMethods
 
 def OrganoTrackVsHarmony():  # one dataset
     datasets = ['EMC-cisplatin']
@@ -481,6 +503,7 @@ def OrganoTrackVsOrganoIDvsFarhan():
 
 
 if __name__ == '__main__':
+    # TestComputePlotTicks()
     OrganoTrackVsOrganoIDvsFarhan()
 
 
