@@ -275,10 +275,12 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
         ax.set_xlabel('Organoid datasets')
         ax.set_ylim(0, 100)
         ax.set_xticks(plotTicks)
-        ax.set_xticklabels(datasets)
+        numberOfDatasetSamples = [5, 4, 6, 6, 6, 10] # fixed, but this is a general function. Get number of smaples from data.
+        datasetTickLabels = [dataset + f'\n (n = {numberOfDatasetSamples[i]})' for i, dataset in enumerate(datasets)]
+        ax.set_xticklabels(datasetTickLabels)
         ax.legend(handles=legend_patches, bbox_to_anchor=(0.1, 0.5))
         plt.tight_layout()
-        # valuesJitter = [np.random.normal(900, 10, 5), np.random.normal(1100, 10, 5)]
+        # valuesJitter = [np.random.normal(900, scale=10, size=the number of points in each dataset), np.random.normal(1100, 10, 5)]
         # palette = [baselineColor, 'royalblue', 'r', 'c', 'm', 'k']
         # for jitter, val, c in zip(valuesJitter, data, palette):
         #     ax.scatter(jitter, val, alpha=0.4, color=c)

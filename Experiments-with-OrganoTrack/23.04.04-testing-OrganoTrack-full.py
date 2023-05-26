@@ -1,4 +1,4 @@
-from OrganoTrack import RunOrganoTrack
+from OrganoTrack.OrganoTrack import RunOrganoTrack
 from pathlib import Path
 import os
 
@@ -16,13 +16,7 @@ blurSize = 3
 segParams = [0.5, 250, 150, extraBlur, 3]
 saveSegParams = [True, exportPath]
 segmentedPaths = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/segmented')
-# fudgeFactor, maxWindowSize, minObjectSize, extraBlur, blurSize
-# def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
-#                    segmentOrgs = True, segParams = None, saveSegParams = None, segmentedImagesPath = None,
-#                    filterOrgs = False, filterCriteria = None, filterBoundary=False,
-#                    trackOrgs = False, timePoints = None, overlayTrack = False,
-#                    exportOrgMeasures = False, numberOfWellFields = None, morphPropsToMeasure = None,
-#                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
+
 # Selection of organoids
 filterBoundary = True
 filterOrganoids = True
@@ -32,7 +26,7 @@ filterBy = ['area', 450, 'roundness', 0.5]  # minimum filter
 # Track organoids
 trackOrgs = True
 timePoints = 4
-overlayTracking = False
+overlayTracking = True
 
 # Measure organoids
 exportOrgMeasures = True
