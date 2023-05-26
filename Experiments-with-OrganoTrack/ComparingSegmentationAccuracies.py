@@ -3,7 +3,7 @@ from OrganoTrack.Detecting import SegmentWithOrganoSegPy
 from OrganoTrack.Evaluating import EvaluateSegmentationAccuracy
 import numpy as np
 from OrganoTrack.Importing import ReadImages
-from OrganoTrack.Displaying import DisplayImages
+from OrganoTrack.Displaying import ExportImageWithContours
 import cv2 as cv
 from datetime import datetime
 import os
@@ -13,6 +13,7 @@ import matplotlib.colors as mcolors
 import openpyxl
 from scipy.stats import ttest_ind
 import matplotlib.patches as mpatches
+from statistics import stdev
 
 '''
     With this file, boxplots can be generated, comparing the segmentation accuracies for different methods on different
@@ -21,8 +22,17 @@ import matplotlib.patches as mpatches
 '''
 
 
-def SaveOverlay(overlay, exportPath, imagePath):
-    cv.imwrite(str(exportPath / imagePath.name), overlay)
+def SaveOverlays(gtAndPredictionOverlay, predictionOutlineOverlay, exportPath, imagePath):
+    gtAndPredictionOverlayExportPath = exportPath / 'gtAndPredictionOverlay'
+    predictionOutlineOverlayExportPath = exportPath / 'predictionOutlineOverlay'
+
+    if not os.path.exists(gtAndPredictionOverlayExportPath):
+        os.mkdir(gtAndPredictionOverlayExportPath)
+    if not os.path.exists(predictionOutlineOverlayExportPath):
+        os.mkdir(predictionOutlineOverlayExportPath)
+
+    cv.imwrite(str(gtAndPredictionOverlayExportPath / imagePath.name), gtAndPredictionOverlay)
+    cv.imwrite(str(predictionOutlineOverlayExportPath / imagePath.name), predictionOutlineOverlay)
 
 
 # source: https://stackoverflow.com/questions/11517986/indicating-the-statistically-significant-difference-in-bar-graph
@@ -112,19 +122,21 @@ def LoadImages(datasetsDirs, predictionMethods, extraOrganoTrackBlur=False, blur
         groundTruthImages, groundTruthImagesNames = ReadImages(groundTruthDir)
         oneDatasetGroundTruthsAndPredictions['groundTruth'] = [groundTruthImages, groundTruthImagesNames]
 
+        originalDir = datasetDir / 'original'
+        originalImages, imagesNames = ReadImages(originalDir)
+        oneDatasetGroundTruthsAndPredictions['original'] = [originalImages, imagesNames]
+
         for method in predictionMethods:
             predictionDir = datasetDir / 'predictions' / (method + '-segmented')
             if method == 'OrganoTrack' and not os.path.exists(predictionDir):
-                originalImagesDir = datasetDir / 'original'
-                originalImages, predictionImagesNames = ReadImages(originalImagesDir)
                 segParams = [0.5, 250, 150, extraOrganoTrackBlur, blurSize]
                 exportPath = datasetDir / 'predictions'
-                saveSegParams = [True, exportPath, predictionImagesNames]
+                saveSegParams = [True, exportPath, imagesNames]
                 predictionImages = SegmentWithOrganoSegPy(originalImages, segParams, saveSegParams)
             else:
-                predictionImages, predictionImagesNames = ReadImages(predictionDir)
+                predictionImages, imagesNames = ReadImages(predictionDir)
 
-            oneDatasetGroundTruthsAndPredictions[method] = [predictionImages, predictionImagesNames]
+            oneDatasetGroundTruthsAndPredictions[method] = [predictionImages, imagesNames]
 
         datasetsGroundTruthsAndPredictions[dataset] = oneDatasetGroundTruthsAndPredictions
 
@@ -142,7 +154,7 @@ def ViewLoadedImages(datasetsGtAndPreds):
 
 def CreateDirectoryToStoreOverlays(datasetDirectory, predictionMethod):
     exportPath = datasetDirectory / 'predictions'
-    overlayExportPath = exportPath / (predictionMethod + '-overlay')
+    overlayExportPath = exportPath / (predictionMethod + '-overlays')
     if not os.path.exists(overlayExportPath):
         os.mkdir(overlayExportPath)
     return overlayExportPath
@@ -156,6 +168,7 @@ def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirectories, predictio
         oneDatasetSegmentationScoresWithDiffMethods = dict()
         datasetDirectory = datasetsDirectories[dataset]
         groundTruthImages = datasetsGtAndPreds[dataset]['groundTruth'][0]
+        originalImages = datasetsGtAndPreds[dataset]['original'][0]
 
         for method in predictionMethods:
             predictedImages = datasetsGtAndPreds[dataset][method][0]
@@ -167,9 +180,10 @@ def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirectories, predictio
             segmentationScores = np.zeros((len(groundTruthImages), 3))
 
             # Evaluating prediction against ground truth
-            for i, (prediction, groundTruth) in enumerate(zip(predictedImages, groundTruthImages)):
-                segmentationScores[i], overlay = EvaluateSegmentationAccuracy(prediction, groundTruth)
-                SaveOverlay(overlay, overlayExportPath, predictedImagesNames[i])
+            for i, (prediction, groundTruth, original) in enumerate(zip(predictedImages, groundTruthImages, originalImages)):
+                segmentationScores[i], gtAndPredOverlay = EvaluateSegmentationAccuracy(prediction, groundTruth)
+                predictionOutlineOverlay = ExportImageWithContours(original, prediction)
+                SaveOverlays(gtAndPredOverlay, predictionOutlineOverlay,  overlayExportPath, predictedImagesNames[i])
 
             oneDatasetSegmentationScoresWithDiffMethods[method] = segmentationScores
         oneDatasetSegmentationScoresWithDiffMethods['imageNames'] = predictedImagesNames
@@ -234,12 +248,10 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     plt.rcParams.update({'font.size': 20})
 
     # Plotting colours
-    colourCodes = mcolors.CSS4_COLORS
-
-    methodColours = {'OrganoTrack': 'blue',
-                     'OrganoID': 'red',
-                     'Farhan1': 'green',
-                     'Farhan2': 'yellow'}
+    methodColours = {'OrganoTrack': 'royalblue',
+                     'OrganoID': 'darkorchid',
+                     'Farhan1': 'darkgreen',
+                     'Farhan2': 'seagreen'}
 
 
     for segAccuracyMeasure, index in zip(measures, measureIndex):
@@ -266,7 +278,10 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
         ax.set_xticklabels(datasets)
         ax.legend(handles=legend_patches, bbox_to_anchor=(0.1, 0.5))
         plt.tight_layout()
-        # plt.legend()
+        # valuesJitter = [np.random.normal(900, 10, 5), np.random.normal(1100, 10, 5)]
+        # palette = [baselineColor, 'royalblue', 'r', 'c', 'm', 'k']
+        # for jitter, val, c in zip(valuesJitter, data, palette):
+        #     ax.scatter(jitter, val, alpha=0.4, color=c)
         fig.show()
 
 
@@ -328,11 +343,11 @@ def ComputeBoxplotPositionsForAllMethods(plotTicks, numDatasets, methods, boxplo
     return boxplotPositionsForAllMethods
 
 def OrganoTrackVsHarmony():  # one dataset
-    datasets = ['EMC-cisplatin']
+    datasets = ['Bladder cancer']
     predictors = ['Harmony', 'OrganoTrack']
     analysisDir = Path('/home/franz/Documents/mep/report/results/segmentation-analysis')
-    analysisFile = analysisDir / (datasets[0] + '-' + predictors[0] + '-' + predictors[1] + '.xlsx')
-    analysisExists = os.path.exists(analysisFile)
+    analysisFilePath = CreateAnalysisFileName(datasets, predictors, analysisDir)
+    analysisExists = os.path.exists(analysisFilePath)
     toBlur = False
 
     if not analysisExists:
@@ -340,9 +355,9 @@ def OrganoTrackVsHarmony():  # one dataset
         datasetsGtAndPreds = LoadImages(datasetsDirs, predictors, toBlur, 3)
         # ViewLoadedImages(datasetsGtAndPreds)
         datasetsPredictionScores = CalculatePredictionScores(datasetsGtAndPreds, datasetsDirs, predictors)
-        ExportPredictionScores(datasetsPredictionScores, analysisFile, predictors)
+        ExportPredictionScores(datasetsPredictionScores, analysisFilePath, predictors)
     else:
-        datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFile)
+        datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFilePath)
 
     # PlotPredictionAccuracies(datasetsPredictionScores, predictors)
 
@@ -352,7 +367,7 @@ def OrganoTrackVsHarmony():  # one dataset
     measureIndex = [0, 1, 2]
     boxWidth = 100
     plt.rcParams.update({'font.size': 20})
-
+    baselineColor = 'indianred'
     measureSigPlot = {'F1': [87, 80], 'IOU': [80, 75], 'Dice': [87, 80]}
     for measure, index in zip(measures, measureIndex):
         data = []
@@ -364,12 +379,7 @@ def OrganoTrackVsHarmony():  # one dataset
             data2 = np.array(datasetsPredictionScores[dataset]['OrganoTrack'][:, index]).T
             data.append(data2)
             ax.boxplot(data[1], positions=x+100, showfliers=False, widths=boxWidth)
-            # one box plot corresponds to one method, not one dataset
-            # fill with colors, https://matplotlib.org/stable/gallery/statistics/boxplot_color.html
-            # colors = ['lightblue', 'lightgreen']
-            # for bplot in bplot1:
-            #     for patch, color in zip(bplot['boxes'], colors):
-            #         patch.set_facecolor(color)
+
 
         ax.set_ylabel(f'{measure} score')
         ax.set_ylim(0, 100)
@@ -379,15 +389,25 @@ def OrganoTrackVsHarmony():  # one dataset
         ax.set_xticklabels(labels)
         ax.set_xlim(800, 1200)
         valuesJitter = [np.random.normal(900, 10, 5), np.random.normal(1100, 10, 5)]
-        palette = ['b', 'g', 'r', 'c', 'm', 'k']
+        palette = [baselineColor, 'royalblue', 'r', 'c', 'm', 'k']
         for jitter, val, c in zip(valuesJitter, data, palette):
             ax.scatter(jitter, val, alpha=0.4, color=c)
         plt.tight_layout()
-        barplot_annotate_brackets(0, 1, .25, [900, 1100], measureSigPlot[measure])
-        fig.show()
-        dataA = np.asarray([float(i) for i in data[0]])
-        dataB = np.asarray([float(i) for i in data[1]])
-        print(ttest_ind(dataA, dataB))  # How likely is it that we would see two sets of samples like this if they were drawn from the same (but unknown) probability distribution?
+        # barplot_annotate_brackets(0, 1, .25, [900, 1100], measureSigPlot[measure])
+        # fig.show()
+
+
+        measureSigPlot2 = {'F1': [87, 80], 'IOU': [80, 75], 'Dice': [87, 80]}
+        fig1, ax1 = plt.subplots(figsize=(7, 6))
+        ax1.bar(1, np.average(data[0]), yerr=stdev(data[0]), capsize=5, color=baselineColor)
+        ax1.bar(2, np.average(data[1]), yerr=stdev(data[1]), capsize=5, color='royalblue')
+        ax1.set_ylabel(f'{measure} score')
+        ax1.set_ylim([0, 100])
+        ax1.set_xticks([1, 2])
+        ax1.set_xticklabels(['Baseline', 'OrganoTrack'])
+        barplot_annotate_brackets(0, 1, .25, [1, 2], measureSigPlot2[measure])
+        plt.tight_layout()
+        fig1.show()
 
 def OrganoTrackVsOrganoID():
     datasets = ['EMC-cisplatin', 'OrganoID-Mouse', 'OrganoID-Original']
@@ -505,5 +525,6 @@ def OrganoTrackVsOrganoIDvsFarhan():
 if __name__ == '__main__':
     # TestComputePlotTicks()
     OrganoTrackVsOrganoIDvsFarhan()
+    # OrganoTrackVsHarmony()
 
 
