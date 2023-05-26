@@ -5,13 +5,16 @@ import os
 # Import
 # dataPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/partOfDataset/input')
 # dataPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/cisplatinDataset/input')
-exportPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/partOfDataset/output')
+# exportPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/partOfDataset/output')
 # exportPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/cisplatinDataset/output')
 
 # Masks
-dataPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/masks/input')
-exportPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/masks/output')
+# dataPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/masks/input')
+# exportPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/masks/output')
 
+# All Masks
+dataPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/masks/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4')
+exportPath = Path('C:/Users/franz/OneDrive/Documents/work-Franz/mep/masks/output')
 
 # Check results
 checkResults = False
