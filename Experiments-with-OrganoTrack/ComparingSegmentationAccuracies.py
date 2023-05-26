@@ -399,6 +399,7 @@ def OrganoTrackVsHarmony():  # one dataset
         for jitter, val, c in zip(valuesJitter, data, palette):
             ax.scatter(jitter, val, alpha=0.4, color=c)
         plt.tight_layout()
+        plt.savefig(str(analysisDir/f'{measure}-OrganoTrackVsBaseline.png'), dpi=300)
         # barplot_annotate_brackets(0, 1, .25, [900, 1100], measureSigPlot[measure])
         # fig.show()
 
@@ -413,6 +414,7 @@ def OrganoTrackVsHarmony():  # one dataset
         ax1.set_xticklabels(['Baseline', 'OrganoTrack'])
         barplot_annotate_brackets(0, 1, .25, [1, 2], measureSigPlot2[measure])
         plt.tight_layout()
+        plt.savefig(str(analysisDir / f'{measure}-OrganoTrackVsBaselinebarGraph.png'), dpi=300)
         fig1.show()
 
 def OrganoTrackVsOrganoID():
@@ -531,7 +533,7 @@ def OrganoTrackVsOrganoIDvsFarhan():
 
 if __name__ == '__main__':
     # TestComputePlotTicks()
-    # OrganoTrackVsOrganoIDvsFarhan()
-    OrganoTrackVsHarmony()
+    OrganoTrackVsOrganoIDvsFarhan()
+    # OrganoTrackVsHarmony()
 
 

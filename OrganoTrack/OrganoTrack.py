@@ -297,6 +297,7 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
         ax.set_ylabel('Size (px)')
         plt.legend()
         plt.tight_layout()
+        plt.savefig(str(exportPath / 'timecourseSizes.png'), dpi=300)
         plt.show()
 
         # Calculating fractional growth
