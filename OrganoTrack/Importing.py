@@ -93,6 +93,36 @@ def ReadImages(inputDataPath):
 
     return inputImages, inputImagesPaths
 
+def ReadImages2(inputDataPath):
+    '''
+    Read Images requires that the images are within a folder called '/images', that inputDataPath is the parent folder
+    of '/images', and that '/images' is teh first item in a list of files in the parent folder (hence line 77 calls
+    for the first element)
+    '''
+    print("\nReading data...")
+    images = dict()
+    imageCount = 0
+    imagesFolderName = sorted(os.listdir(inputDataPath))[0]  # the first element should be the 'images' folder
+    imagesFolderDir = inputDataPath / imagesFolderName
+
+    # > Get the names and extensions of the image files in the directory
+    inputImagesNames = sorted(os.listdir(imagesFolderDir))
+
+    # > Create directory paths for each image file
+    inputImagesPaths = [imagesFolderDir / imageName for imageName in inputImagesNames]
+
+    # > Read images
+    for imagePath in inputImagesPaths:
+        images[imagePath.stem] = cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE)
+        imageCount+=1
+        print(f'Images read: {imageCount}')
+
+    print("Finished reading data.")
+
+    print("There is/are in total " + str(len(images)) + " image(s).")
+
+    return images, inputImagesPaths
+
 
 def ReadImage(imagePath):
     return cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE)
