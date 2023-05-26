@@ -31,7 +31,7 @@ def FilterByFeature(binaryImages, filterFeature, filterThreshold):
 
         # > Define properties to measure
         selectedProperties = ['label', filterFeature]
-        if filterFeature == 'roundness':
+        if filterFeature.lower() == 'roundness' or filterFeature.lower() == 'circularity':
             selectedProperties = ['label', 'area', 'perimeter']  # label is the integer label of the object
 
         # > Measure the features
@@ -44,7 +44,7 @@ def FilterByFeature(binaryImages, filterFeature, filterThreshold):
         measurementsDf = pd.DataFrame(measurementsDict)
 
         # > If roundness, calculate and keep that only
-        if filterFeature == 'roundness':
+        if filterFeature.lower() == 'roundness' or filterFeature.lower() == 'circularity':
             measurementsDf[filterFeature] = CalculateRoundness(measurementsDf['area'], measurementsDf['perimeter'])
             measurementsDf.drop(columns=['area', 'perimeter'])
 

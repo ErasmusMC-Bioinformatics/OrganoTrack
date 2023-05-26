@@ -22,17 +22,21 @@ from statistics import stdev
 '''
 
 
-def SaveOverlays(gtAndPredictionOverlay, predictionOutlineOverlay, exportPath, imagePath):
+def SaveOverlays(gtAndPredictionOverlay, predictionOutlineOverlay, groundTruthOutlineOverlay, exportPath, imagePath):
     gtAndPredictionOverlayExportPath = exportPath / 'gtAndPredictionOverlay'
     predictionOutlineOverlayExportPath = exportPath / 'predictionOutlineOverlay'
+    groundTruthOutlineOverlayExportPath = exportPath / 'groundTruthOutlineOverlay'
 
     if not os.path.exists(gtAndPredictionOverlayExportPath):
         os.mkdir(gtAndPredictionOverlayExportPath)
     if not os.path.exists(predictionOutlineOverlayExportPath):
         os.mkdir(predictionOutlineOverlayExportPath)
+    if not os.path.exists(groundTruthOutlineOverlayExportPath):
+        os.mkdir(groundTruthOutlineOverlayExportPath)
 
     cv.imwrite(str(gtAndPredictionOverlayExportPath / imagePath.name), gtAndPredictionOverlay)
     cv.imwrite(str(predictionOutlineOverlayExportPath / imagePath.name), predictionOutlineOverlay)
+    cv.imwrite(str(groundTruthOutlineOverlayExportPath / imagePath.name), groundTruthOutlineOverlay)
 
 
 # source: https://stackoverflow.com/questions/11517986/indicating-the-statistically-significant-difference-in-bar-graph
@@ -183,7 +187,8 @@ def CalculatePredictionScores(datasetsGtAndPreds, datasetsDirectories, predictio
             for i, (prediction, groundTruth, original) in enumerate(zip(predictedImages, groundTruthImages, originalImages)):
                 segmentationScores[i], gtAndPredOverlay = EvaluateSegmentationAccuracy(prediction, groundTruth)
                 predictionOutlineOverlay = ExportImageWithContours(original, prediction)
-                SaveOverlays(gtAndPredOverlay, predictionOutlineOverlay,  overlayExportPath, predictedImagesNames[i])
+                groundTruthOutlineOverlay = ExportImageWithContours(original, groundTruth)
+                SaveOverlays(gtAndPredOverlay, predictionOutlineOverlay, groundTruthOutlineOverlay, overlayExportPath, predictedImagesNames[i])
 
             oneDatasetSegmentationScoresWithDiffMethods[method] = segmentationScores
         oneDatasetSegmentationScoresWithDiffMethods['imageNames'] = predictedImagesNames
@@ -239,7 +244,7 @@ def LoadPredictionScoreAnalysis(analysisFilePath):
 
     return datasetsPredictionScores
 
-def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
+def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods, boxplotCharacteristics):
     datasets = list(datasetsPredictionScores.keys())
     # https: // matplotlib.org / stable / gallery / statistics / boxplot_demo.html
     measures = ['F1', 'IOU', 'Dice']
@@ -251,11 +256,12 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
     methodColours = {'OrganoTrack': 'royalblue',
                      'OrganoID': 'darkorchid',
                      'Farhan1': 'darkgreen',
-                     'Farhan2': 'seagreen'}
+                     'Farhan2': 'seagreen',
+                     'Gradient': 'salmon'}
 
 
     for segAccuracyMeasure, index in zip(measures, measureIndex):
-        plotTicks, boxplotPositionsPerMethod = ComputeBoxplotTicksAndPositions(predictionMethods, len(datasets))
+        plotTicks, boxplotPositionsPerMethod = ComputeBoxplotTicksAndPositions(predictionMethods, len(datasets), boxplotCharacteristics)
         fig, ax = plt.subplots(figsize=(20, 6))
         legend_patches = []
 
@@ -278,7 +284,7 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
         numberOfDatasetSamples = [5, 4, 6, 6, 6, 10] # fixed, but this is a general function. Get number of smaples from data.
         datasetTickLabels = [dataset + f'\n (n = {numberOfDatasetSamples[i]})' for i, dataset in enumerate(datasets)]
         ax.set_xticklabels(datasetTickLabels)
-        ax.legend(handles=legend_patches, bbox_to_anchor=(0.1, 0.5))
+        ax.legend(handles=legend_patches, bbox_to_anchor=(0.1, 0.6))
         plt.tight_layout()
         # valuesJitter = [np.random.normal(900, scale=10, size=the number of points in each dataset), np.random.normal(1100, 10, 5)]
         # palette = [baselineColor, 'royalblue', 'r', 'c', 'm', 'k']
@@ -287,12 +293,10 @@ def PlotPredictionAccuracies(datasetsPredictionScores, predictionMethods):
         fig.show()
 
 
-def ComputeBoxplotTicksAndPositions(methods, numberOfDatasets):
+def ComputeBoxplotTicksAndPositions(methods, numberOfDatasets, boxplotCharacteristics):
 
     positionsOfBoxplotsForEachMethod = dict()
     numberOfMethods = len(methods)
-
-    boxplotCharacteristics = {'distanceToFirstBoxFromYAxis': 2, 'boxWidth': 0.5, 'spaceBetweenBoxes': 0.5}
 
     boxplotXAxisTicks = ComputeBoxplotXAxisTicks(numberOfMethods, numberOfDatasets, boxplotCharacteristics)
 
@@ -506,7 +510,7 @@ def CreateAnalysisFileName(datasetsNames, predictorsNames, analysisDir):
 def OrganoTrackVsOrganoIDvsFarhan():
     # To compare fairly with OrganoSeg, you'll need to remove all border objects from all other images.
     datasets = ['Bladder cancer', 'Mouse', 'Salivary ACC', 'Colon', 'Lung', 'PDAC']
-    predictors = ['OrganoTrack', 'OrganoID', 'Farhan1', 'Farhan2']
+    predictors = ['OrganoTrack', 'OrganoID', 'Farhan1', 'Farhan2', 'Gradient']
     analysisDir = Path('/home/franz/Documents/mep/report/results/segmentation-analysis')
 
     analysisFilePath = CreateAnalysisFileName(datasets, predictors, analysisDir)
@@ -521,12 +525,13 @@ def OrganoTrackVsOrganoIDvsFarhan():
     else:
         datasetsPredictionScores = LoadPredictionScoreAnalysis(analysisFilePath)
 
-    PlotPredictionAccuracies(datasetsPredictionScores, predictors)
+    boxplotCharacteristics = {'distanceToFirstBoxFromYAxis': 2, 'boxWidth': 0.5, 'spaceBetweenBoxes': 0.5}
+    PlotPredictionAccuracies(datasetsPredictionScores, predictors, boxplotCharacteristics)
 
 
 if __name__ == '__main__':
     # TestComputePlotTicks()
-    OrganoTrackVsOrganoIDvsFarhan()
-    # OrganoTrackVsHarmony()
+    # OrganoTrackVsOrganoIDvsFarhan()
+    OrganoTrackVsHarmony()
 
 
