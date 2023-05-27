@@ -139,7 +139,6 @@ def RemoveSmallNoise(image, minObjectSize):
 
     # minimum size of particles we want to keep (number of pixels).
     # here, it's a fixed value, but you can set it as you want, eg the mean of the sizes or whatever.
-    minObjectSize = 150
 
     # output image with only the kept components
     im_result = np.zeros_like(im_with_separated_blobs, dtype=np.uint8)
