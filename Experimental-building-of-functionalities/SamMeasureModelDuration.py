@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def MeasureSegmentationDurationOfModels():
-    imagesPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/sam-measuring-model-durations/original')
+    imagesPath = Path('/home/franz/testingSam/input')
     images, imagesNames = ReadImages(imagesPath)
     images = [cv.cvtColor(img, cv.COLOR_GRAY2RGB)for img in images]
 
