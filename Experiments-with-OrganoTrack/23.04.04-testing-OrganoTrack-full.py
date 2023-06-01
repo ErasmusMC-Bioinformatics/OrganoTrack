@@ -46,35 +46,3 @@ RunOrganoTrack(dataPath, exportPath, checkResults,
                exportOrgMeasures, numberOfWellFields, morphPropertiesToMeasure,
                handlePlotting, loadExportedData, exportedDataPath)
 
-
-# # RunOrganoTrack(plotData=handlePlotting, loadDataForPlotting=loadExportedData, pathDataForPlotting=exportedDataPath)
-#
-# import2 = True
-# importPath2 = Path('C:/Users/franz/Documents/OrganoTrackl/stackofd1r1t0/input')
-# exportPath2 = Path('C:/Users/franz/Documents/OrganoTrackl/stackofd1r1t0/output')
-#
-# # Check results
-# checkResults2 = False
-#
-# # Segmentation
-# saveSegmentations2 = False
-# segment2 = False
-# segmentedPaths2 = Path('C:/Users/franz/Documents/OrganoTrackl/stackofd1r1t0/output/segmented')
-#
-# # Selection of organoids
-# filterOrganoids2 = True
-# filterBy2 = ['area', 450, 'roundness', 0.5]  # minimum filter
-#
-# # Track organoids
-# trackOrgs2 = True
-# timePoints2 = 4
-# overlayTracking2 = True
-#
-#
-#
-# RunOrganoTrack(import2, importPath2, exportPath2, checkResults2,
-#                        saveSegmentations2, segment2, segmentedPaths2,
-#                        filterOrganoids2, filterBy2,
-#                        trackOrgs2, timePoints2, overlayTracking2)
-#                        # exportOrgMeasures, morphPropertiesToMeasure,
-#                        # handlePlotting, loadExportedData, exportedDataPath)

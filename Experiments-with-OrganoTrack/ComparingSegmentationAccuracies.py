@@ -5,11 +5,9 @@ import numpy as np
 from OrganoTrack.Importing import ReadImages
 from OrganoTrack.Displaying import ExportImageWithContours
 import cv2 as cv
-from datetime import datetime
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 import openpyxl
 from scipy.stats import ttest_ind
 import matplotlib.patches as mpatches
@@ -416,6 +414,9 @@ def OrganoTrackVsHarmony():  # one dataset
         plt.tight_layout()
         plt.savefig(str(analysisDir / f'{measure}-OrganoTrackVsBaselinebarGraph.png'), dpi=300)
         fig1.show()
+        dataA = np.asarray([float(i) for i in data[0]])
+        dataB = np.asarray([float(i) for i in data[1]])
+        print(ttest_ind(dataA, dataB))
 
 def OrganoTrackVsOrganoID():
     datasets = ['EMC-cisplatin', 'OrganoID-Mouse', 'OrganoID-Original']
@@ -533,7 +534,7 @@ def OrganoTrackVsOrganoIDvsFarhan():
 
 if __name__ == '__main__':
     # TestComputePlotTicks()
-    OrganoTrackVsOrganoIDvsFarhan()
-    # OrganoTrackVsHarmony()
+    # OrganoTrackVsOrganoIDvsFarhan()
+    OrganoTrackVsHarmony()
 
 

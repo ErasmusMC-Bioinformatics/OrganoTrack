@@ -4,7 +4,7 @@
 import cv2 as cv
 from stitch import read_images, stitch
 from normalise import normalise
-from functions import plotHistogram, display
+from functions import display
 
 if __name__ == '__main__':
     # print ref image

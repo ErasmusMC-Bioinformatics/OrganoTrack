@@ -1,13 +1,7 @@
 from stitch import readImages
-from segmentation import segmentWithOrganoSegPy
-from functions import display
-import numpy as np
-import time
+from toDelete.segmentation import segmentWithOrganoSegPy
 import cv2 as cv
-import glob
 import matplotlib.pyplot as plt
-import math
-import pandas as pd
 import os
 from datetime import datetime
 

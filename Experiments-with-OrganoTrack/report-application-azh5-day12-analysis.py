@@ -180,80 +180,80 @@ plt.savefig(str(exportDir / 'object-area-per-condition.png'), dpi=300)
 fig.show()
 
 #
-# Total area per condition
-fig1, ax1 = plt.subplots()
-ax1.bar(sortedImageCondition, areaSums)
-ax1.set_ylabel('Area (px)')
-ax1.set_xlabel(r'Condition concentration ($\mu$M)')
-# ax.ticklabel_format(axis='y', style='sci', useMathText=True)
-ax1.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-# ax1.set_title('Total object area per condition')
-plt.tight_layout()
-plt.savefig(str(exportDir / 'totalObjectAreaPerCondition.png'), dpi=300)
-fig1.show()
-
-# Total count per condition
-objectCount = np.array([len(i) for i in areaMeasurements])
-fig2, ax2 = plt.subplots()
-ax2.bar(sortedImageCondition, objectCount)
-ax2bars = ax.bar(sortedImageCondition, objectCount)
-ax2.bar_label(ax2bars)
-ax2.set_ylabel('Object count')
-ax2.set_ylim([0, 25])
-ax2.set_xlabel(r'Condition concentration ($\mu$M)')
-ax.set_xticklabels(objectCount.astype(int))
-# ax2.set_title('Total object count per condition')
-plt.tight_layout()
-plt.savefig(str(exportDir / 'totalObjectCountPerCondition.png'), dpi=300)
-fig2.show()
+# # Total area per condition
+# fig1, ax1 = plt.subplots()
+# ax1.bar(sortedImageCondition, areaSums)
+# ax1.set_ylabel('Area (px)')
+# ax1.set_xlabel(r'Condition concentration ($\mu$M)')
+# # ax.ticklabel_format(axis='y', style='sci', useMathText=True)
+# ax1.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+# # ax1.set_title('Total object area per condition')
+# plt.tight_layout()
+# plt.savefig(str(exportDir / 'totalObjectAreaPerCondition.png'), dpi=300)
+# fig1.show()
 #
-# Circularity per condition post filtering
-fig3, ax3 = plt.subplots()
-ax3.boxplot(circularityMeasurements, labels=sortedImageCondition, showfliers=False)
-ax3.set_ylabel('Circularity (a.u.)')
-ax3.set_ylim([0, 1])
-ax3.set_xlabel(r'Condition concentration ($\mu$M)')
-# ax3.set_title('Object circularity per condition')
-palette = ['b', 'g', 'r', 'c', 'm', 'k']
-for x, val, c in zip(xs, circularityMeasurements, palette):
-    ax3.scatter(x, val, alpha=0.4, color=c)
-plt.tight_layout()
-plt.savefig(str(exportDir / 'ObjectCircPerCondition.png'), dpi=300)
-fig3.show()
+# # Total count per condition
+# objectCount = np.array([len(i) for i in areaMeasurements])
+# fig2, ax2 = plt.subplots()
+# ax2.bar(sortedImageCondition, objectCount)
+# ax2bars = ax.bar(sortedImageCondition, objectCount)
+# ax2.bar_label(ax2bars)
+# ax2.set_ylabel('Object count')
+# ax2.set_ylim([0, 25])
+# ax2.set_xlabel(r'Condition concentration ($\mu$M)')
+# ax.set_xticklabels(objectCount.astype(int))
+# # ax2.set_title('Total object count per condition')
+# plt.tight_layout()
+# plt.savefig(str(exportDir / 'totalObjectCountPerCondition.png'), dpi=300)
+# fig2.show()
+# #
+# # Circularity per condition post filtering
+# fig3, ax3 = plt.subplots()
+# ax3.boxplot(circularityMeasurements, labels=sortedImageCondition, showfliers=False)
+# ax3.set_ylabel('Circularity (a.u.)')
+# ax3.set_ylim([0, 1])
+# ax3.set_xlabel(r'Condition concentration ($\mu$M)')
+# # ax3.set_title('Object circularity per condition')
+# palette = ['b', 'g', 'r', 'c', 'm', 'k']
+# for x, val, c in zip(xs, circularityMeasurements, palette):
+#     ax3.scatter(x, val, alpha=0.4, color=c)
+# plt.tight_layout()
+# plt.savefig(str(exportDir / 'ObjectCircPerCondition.png'), dpi=300)
+# fig3.show()
+#
+# # Circularity per condition post filtering
+# fig4, ax4 = plt.subplots()
+# ax4.boxplot(circMeasurePreFilt, labels=sortedImageCondition, showfliers=False)
+# ax4.set_ylabel('Circularity (a.u.)')
+# ax4.set_ylim([0, 1])
+# ax4.set_xlabel(r'Condition concentration ($\mu$M)')
+# # ax4.set_title('Object circularity per condition before filtering')
+# palette = ['b', 'g', 'r', 'c', 'm', 'k']
+# for jitter, val, c in zip(jitters, circMeasurePreFilt, palette):
+#     ax4.scatter(jitter, val, alpha=0.4, color=c)
+# plt.tight_layout()
+# plt.savefig(str(exportDir / 'ObjectCircPerConditionPreFilt.png'), dpi=300)
+# fig4.show()
+#
+# # Average area per condition
+# averageAreaMeasurements = [np.average(measurements) for measurements in areaMeasurements]
+# stdDevAreaMeasurements = [stdev(measurements) if len(measurements) > 1 else 0 for measurements in areaMeasurements]
+#
+# fig5, ax5 = plt.subplots()
+# ax5.bar(sortedImageCondition, averageAreaMeasurements, yerr=stdDevAreaMeasurements, capsize=5, color='royalblue')
+# ax5.set_ylabel('Area (px)')
+# ax5.set_xlabel(r'Condition concentration ($\mu$M)')
+# # ax.ticklabel_format(axis='y', style='sci', useMathText=True)
+# ax5.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
+# # ax5.set_title('Average object area per condition')
+# plt.tight_layout()
+# plt.savefig(str(exportDir / 'AvgObjAreaPerCondition.png'), dpi=300)
+# fig5.show()
 
-# Circularity per condition post filtering
-fig4, ax4 = plt.subplots()
-ax4.boxplot(circMeasurePreFilt, labels=sortedImageCondition, showfliers=False)
-ax4.set_ylabel('Circularity (a.u.)')
-ax4.set_ylim([0, 1])
-ax4.set_xlabel(r'Condition concentration ($\mu$M)')
-# ax4.set_title('Object circularity per condition before filtering')
-palette = ['b', 'g', 'r', 'c', 'm', 'k']
-for jitter, val, c in zip(jitters, circMeasurePreFilt, palette):
-    ax4.scatter(jitter, val, alpha=0.4, color=c)
-plt.tight_layout()
-plt.savefig(str(exportDir / 'ObjectCircPerConditionPreFilt.png'), dpi=300)
-fig4.show()
-
-# Average area per condition
-averageAreaMeasurements = [np.average(measurements) for measurements in areaMeasurements]
-stdDevAreaMeasurements = [stdev(measurements) if len(measurements) > 1 else 0 for measurements in areaMeasurements]
-
-fig5, ax5 = plt.subplots()
-ax5.bar(sortedImageCondition, averageAreaMeasurements, yerr=stdDevAreaMeasurements, capsize=5, color='royalblue')
-ax5.set_ylabel('Area (px)')
-ax5.set_xlabel(r'Condition concentration ($\mu$M)')
-# ax.ticklabel_format(axis='y', style='sci', useMathText=True)
-ax5.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
-# ax5.set_title('Average object area per condition')
-plt.tight_layout()
-plt.savefig(str(exportDir / 'AvgObjAreaPerCondition.png'), dpi=300)
-fig5.show()
-
-filePath = Path('/home/franz/Documents/mep/data/experiments/2023-02-24-Cis-Tos-dataset-mathijs/220123_Tosedostat&Cisplatin.xlsb')
+filePath = Path('/home/franz/Documents/mep/data/experiments/2023-02-24-Cis-Tos-dataset-mathijs/220123_Tosedostat&Cisplatin.ods')
 reseedingData = pd.read_excel(filePath, sheet_name='Reseeding (Azh4+5)', header=None)
-avg = reseedingData.iloc[270,4:10].to_numpy(dtype=np.float64)
-stdDev = reseedingData.iloc[271,4:10].to_numpy(dtype=np.float64)
+avg = reseedingData.iloc[265,4:10].to_numpy(dtype=np.float64)
+stdDev = reseedingData.iloc[266,4:10].to_numpy(dtype=np.float64)
 fig6, ax6 = plt.subplots()
 ax6.bar(sortedImageCondition, avg, yerr=stdDev, capsize=5, color='salmon')
 ax6.set_ylabel('Cell viability (% of control)')

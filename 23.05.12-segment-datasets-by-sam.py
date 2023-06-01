@@ -1,6 +1,5 @@
 from pathlib import Path
 from OrganoTrack.Importing import ReadImages
-from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 import numpy as np
 import cv2 as cv
 from SamMeasureModelDuration import ExportBinaryMask, SegmentBySAM, ExportDurations

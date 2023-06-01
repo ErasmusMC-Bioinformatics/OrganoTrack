@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from pathlib import Path
 # needed to install xlrd
+from scipy import stats
 
 
 def ReadPlateLayout(inputDataPath):
@@ -86,6 +87,9 @@ def ReadImages(inputDataPath):
 
     # > Read images
     inputImages = [cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE) for imagePath in inputImagesPaths]
+    # Without any 2nd input to imread: IM_READ_COLOR by default: If set, always convert image to the 3 channel BGR color image. 
+    # Using IMREAD_GRAYSCALE: If set, always convert image to the single channel grayscale image (codec internal conversion).
+    # See more reading flags here: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
 
     print("Finished reading data.")
 
@@ -129,8 +133,10 @@ def ReadImage(imagePath):
 
 
 def Test_ReadImages():
-    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/input')
-    inputImages, inputImagesNames = ReadImages(dataPath)
+    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/Cis-drug-screen-subset-of-Images_control-and-cis-field-1-all-times/r02c02f01p01-ch1sk1fk1fl1.tiff')
+    inputImage = ReadImage(dataPath)
+    m = stats.mode(inputImage)
+    print(m[0])
     print('test')
 
 def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
@@ -144,4 +150,4 @@ def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
 
 
 if __name__ == '__main__':
-    Test_ReadPlateLayout()
+    Test_ReadImages()

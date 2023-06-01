@@ -1,4 +1,3 @@
-import numpy as np
 import cv2 as cv
 from functions import display
 from stitch import automatic_brightness_and_contrast
