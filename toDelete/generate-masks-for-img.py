@@ -19,7 +19,8 @@ def show_anns(anns):
         m = ann['segmentation']
         color_mask = np.concatenate([np.random.random(3), [0.35]])
         img[m] = color_mask
-    ax.imshow(img)
+    return img
+    # ax.imshow(img)
 
 
 # # 10 x image - it works with this
@@ -76,27 +77,27 @@ print('Original image shown')
 
 
 
-# '''
-#     Generating masks with Model B
-# '''
-# sam_checkpoint_b = "sam_vit_b_01ec64.pth"
-# model_type_b = "vit_b"
-#
-# print('generating mask - model B')
-# tic_B = time.process_time()
-# sam = sam_model_registry[model_type_b](checkpoint=sam_checkpoint_b)
-# mask_generator = SamAutomaticMaskGenerator(sam)
-# masks = mask_generator.generate(img)
-# toc_B = time.process_time() - tic_B
-# print('Time elapsed with model B (s): ', toc_B)
-#
-# # Show segmented image
-# plt.figure(figsize=(20,20))
-# plt.imshow(img)
-# show_anns(masks)
-# plt.axis('off')
-# plt.show()
-# print('Model B figure shown')
+'''
+    Generating masks with Model B
+'''
+sam_checkpoint_b = "sam_vit_b_01ec64.pth"
+model_type_b = "vit_b"
+
+print('generating mask - model B')
+tic_B = time.process_time()
+sam = sam_model_registry[model_type_b](checkpoint=sam_checkpoint_b)
+mask_generator = SamAutomaticMaskGenerator(sam)
+masks = mask_generator.generate(img)
+toc_B = time.process_time() - tic_B
+print('Time elapsed with model B (s): ', toc_B)
+
+# Show segmented image
+plt.figure(figsize=(20,20))
+plt.imshow(img)
+show_anns(masks)
+plt.axis('off')
+plt.show()
+print('Model B figure shown')
 
 
 '''
