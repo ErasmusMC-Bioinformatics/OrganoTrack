@@ -4,6 +4,7 @@ import pandas as pd
 from pathlib import Path
 # needed to install xlrd
 from scipy import stats
+import re
 
 
 def ReadPlateLayout(inputDataPath):
@@ -68,34 +69,47 @@ def Test_ReadPlateLayout():
     plateDirTSV = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/buildingPipeline_Input/plate_layout.tsv'
     ReadPlateLayout(dataPath)
 
-def ReadImages(inputDataPath):
-    '''
-    Read Images requires that the images are within a folder called '/images', that inputDataPath is the parent folder
-    of '/images', and that '/images' is teh first item in a list of files in the parent folder (hence line 77 calls
-    for the first element)
-    '''
+def GetIdentifierValue(imageName, identifier):
+    pattern = r"{0}(\d+)".format(identifier)
+    pass
+
+def GetIdentifierInfo(imageName, identifiers):
+    identifierValues = dict()
+    identifierMeaning = list(identifiers.keys())
+    for identifier in :
+        identiferValue = GetIdentifierValue(imageName, identifier)
+        identifierValues[identifier] = identiferValue
+    return identifierValues
+
+def ReadImages(importPath, identifiers):
     print("\nReading data...")
 
-    imagesFolderName = sorted(os.listdir(inputDataPath))[0]  # the first element should be the 'images' folder
-    imagesFolderDir = inputDataPath / imagesFolderName
+    imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
+    imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
 
-    # > Get the names and extensions of the image files in the directory
-    inputImagesNames = sorted(os.listdir(imagesFolderDir))
+    imagesByWellsFieldsAndTimepoints = dict()
 
-    # > Create directory paths for each image file
-    inputImagesPaths = [imagesFolderDir / imageName for imageName in inputImagesNames]
+    for imageName in imagesFileNamesWithExtensions:
+        well, field, position, timepoint = GetIdentifierInfo(imageName, identifiers)
 
-    # > Read images
-    inputImages = [cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE) for imagePath in inputImagesPaths]
-    # Without any 2nd input to imread: IM_READ_COLOR by default: If set, always convert image to the 3 channel BGR color image. 
-    # Using IMREAD_GRAYSCALE: If set, always convert image to the single channel grayscale image (codec internal conversion).
+
+
+    # inputImages = [cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE) for imagePath in importImagesPaths]
+    # Using cv.IMREAD_GRAYSCALE to convert any image to single channel, 8-bit grayscale image
     # See more reading flags here: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
+    # print("Finished reading data.")
+    # return inputImages, importImagesPaths
 
-    print("Finished reading data.")
+def Test_ReadImages():
+    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/input')
+    identifiers = {'row': 'r',
+                   'column': 'c',
+                   'field': 'f',
+                   'position': 'p',
+                   'timePoint': 'sk'}
+    images, imagesPaths = ReadImages(dataPath, identifiers)
+    print('s')
 
-    print("There is/are in total " + str(len(inputImages)) + " image(s).")
-
-    return inputImages, inputImagesPaths
 
 def ReadImages2(inputDataPath):
     '''
@@ -132,12 +146,13 @@ def ReadImage(imagePath):
     return cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE)
 
 
-def Test_ReadImages():
+def Test_ReadImage():
     dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/Cis-drug-screen-subset-of-Images_control-and-cis-field-1-all-times/r02c02f01p01-ch1sk1fk1fl1.tiff')
     inputImage = ReadImage(dataPath)
     m = stats.mode(inputImage)
     print(m[0])
     print('test')
+
 
 def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
     # to the right well in plate layout
