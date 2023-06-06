@@ -71,27 +71,28 @@ def Test_ReadPlateLayout():
 
 def GetIdentifierValue(imageName, identifier):
     pattern = r"{0}(\d+)".format(identifier)
-    pass
+    match = re.search(pattern, imageName)
+    return int(match.group(1))  # the identifier value
 
 def GetIdentifierInfo(imageName, identifiers):
     identifierValues = dict()
-    identifierMeaning = list(identifiers.keys())
-    # for identifier in :
-    #     identiferValue = GetIdentifierValue(imageName, identifier)
-    #     identifierValues[identifier] = identiferValue
+    for identifierName, identifier in identifiers.items():
+        identiferValue = GetIdentifierValue(imageName, identifier)
+        identifierValues[identifierName] = identiferValue
     return identifierValues
 
 def ReadImages(importPath, identifiers):
     print("\nReading data...")
 
-    imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
-    imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
+    # imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
+    # imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
+    imagesFileNamesWithExtensions = ['r02c02f02p01-ch1sk1fk1fl1.tiff']
 
     imagesByWellsFieldsAndTimepoints = dict()
 
     for imageName in imagesFileNamesWithExtensions:
-        well, field, position, timepoint = GetIdentifierInfo(imageName, identifiers)
-
+        identifierValues = GetIdentifierInfo(imageName, identifiers)
+    pass
 
 
     # inputImages = [cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE) for imagePath in importImagesPaths]
