@@ -74,11 +74,6 @@ def ExportImageWithContours(ori, pred): #, imagePath, exportPath):
 
     # Combine the images
     return cv.addWeighted(img, 1-alpha, back, alpha, 0)
-    #
-    # exportDir = str(exportPath / 'contours-roundness-filtered' / (imagePath.stem + '.png'))
-    # exportDirUpdated = exportDir.replace("\\", "/")
-    # cv.imwrite(exportDirUpdated, result)
-
 
 if __name__ == '__main__':
 

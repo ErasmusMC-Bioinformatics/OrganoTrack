@@ -17,7 +17,11 @@ def BinariseTo1(predictionImage, groundTruthImage):
 
 def ColouriseImage(image, colour):
     image = image.astype(np.uint8)
-    colourCodes = {'blue': (219, 152, 52), 'orange': (34, 126, 230), 'gray': (199, 195, 189)}
+    colourCodes = {'blue': (219, 152, 52),
+                   'orange': (34, 126, 230),
+                   'green': (96, 174, 39),
+                   'gray': (199, 195, 189),
+                   'red': (60, 76, 231)}
 
     _, image = cv.threshold(image, 0, 255, cv.THRESH_BINARY)
 
@@ -57,7 +61,7 @@ def EvaluateSegmentationAccuracy(predictionImage, groundTruthImage):
 
     truePositiveColour = ColouriseImage(truePositiveImage, 'blue')
     falsePositiveColour = ColouriseImage(255*falsePositiveImage, 'orange')
-    falseNegativeColour = ColouriseImage(255*falseNegativeImage, 'gray')
+    falseNegativeColour = ColouriseImage(255*falseNegativeImage, 'red')
 
     overlay = cv.addWeighted(truePositiveColour, 1, falsePositiveColour, 1, 0)
     overlay = cv.addWeighted(overlay, 1, falseNegativeColour, 1, 0)
