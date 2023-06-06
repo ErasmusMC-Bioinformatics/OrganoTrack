@@ -57,7 +57,7 @@ def EvaluateSegmentationAccuracy(predictionImage, groundTruthImage):
 
     truePositiveColour = ColouriseImage(truePositiveImage, 'blue')
     falsePositiveColour = ColouriseImage(255*falsePositiveImage, 'orange')
-    falseNegativeColour = ColouriseImage(255*falseNegativeImage, 'gray')
+    falseNegativeColour = ColouriseImage(255*falseNegativeImage, 'red')
 
     overlay = cv.addWeighted(truePositiveColour, 1, falsePositiveColour, 1, 0)
     overlay = cv.addWeighted(overlay, 1, falseNegativeColour, 1, 0)

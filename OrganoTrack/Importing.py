@@ -76,9 +76,9 @@ def GetIdentifierValue(imageName, identifier):
 def GetIdentifierInfo(imageName, identifiers):
     identifierValues = dict()
     identifierMeaning = list(identifiers.keys())
-    for identifier in :
-        identiferValue = GetIdentifierValue(imageName, identifier)
-        identifierValues[identifier] = identiferValue
+    # for identifier in :
+    #     identiferValue = GetIdentifierValue(imageName, identifier)
+    #     identifierValues[identifier] = identiferValue
     return identifierValues
 
 def ReadImages(importPath, identifiers):
