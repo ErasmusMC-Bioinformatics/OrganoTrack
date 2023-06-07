@@ -16,49 +16,8 @@ import skimage.measure
 import matplotlib.pyplot as plt
 import time
 from itertools import chain
-import re
 
 
-def create_area_dictionary(image_dictionary, row_identifier, column_identifier, area_identifier, timepoint_identifier):
-    area_dictionary = {}
-    for image_name, image in image_dictionary.items():
-        row_match = re.search(f"{row_identifier}(\d+)", image_name, re.IGNORECASE)
-        row = int(row_match.group(1)) if row_match else None
-
-        column_match = re.search(f"{column_identifier}(\d+)", image_name, re.IGNORECASE)
-        column = int(column_match.group(1)) if column_match else None
-
-        area_match = re.search(f"{area_identifier}(\d+)", image_name, re.IGNORECASE)
-        area = int(area_match.group(1)) if area_match else None
-
-        timepoint_match = re.search(f"{timepoint_identifier}(\d+)", image_name, re.IGNORECASE)
-        timepoint = int(timepoint_match.group(1)) if timepoint_match else 1
-
-        if row is not None and column is not None and area is not None:
-            well_area = (row, column, area)
-            if well_area not in area_dictionary:
-                area_dictionary[well_area] = {}
-            if timepoint not in area_dictionary[well_area]:
-                area_dictionary[well_area][timepoint] = []
-            area_dictionary[well_area][timepoint].append(image)
-
-    return area_dictionary
-
-def create_well_dictionary(area_dictionary):
-    well_dictionary = {}
-    for well_area, timepoints in area_dictionary.items():
-        row, column, area = well_area
-        well = (row, column)
-
-        if well not in well_dictionary:
-            well_dictionary[well] = {}
-
-        for timepoint, images in timepoints.items():
-            if area not in well_dictionary[well]:
-                well_dictionary[well][area] = {}
-            well_dictionary[well][area][timepoint] = images
-
-    return well_dictionary
 def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
                    segmentOrgs = True, segParams = None, saveSegParams = None, segmentedImagesPath = None,
                    filterBoundary=False, filterOrgs = False, filterCriteria = None,
@@ -67,10 +26,9 @@ def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
 
     # inputImages, imageNames = ReadImages(importPath)
-    inputImages, imageNames = ReadImages2(importPath)
+    inputImages, imageNames = ReadImages(importPath)
     saveSegParams.append(imageNames)
     row_identifier, column_identifier, area_identifier, timepoint_identifier = 'R', 'C', 'F', 'T'
-    imagesOrganisedByWellsAndFieldsAndTimepoints = create_well_dictionary(create_area_dictionary(inputImages, row_identifier, column_identifier, area_identifier, timepoint_identifier))
 
 
 

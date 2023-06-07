@@ -124,6 +124,15 @@ def Test_ReadImages():
     images, imagesPaths = ReadImages(dataPath, identifiers)
     print('s')
 
+def Test_ReadImagesWithHarmonyExport():
+    dataPath = Path('/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/all-images')
+    identifiers = {'row': 'R',  # identifiers should be an input by the user indeed, how to allow A3 input?
+                   'column': 'C',
+                   'field': 'F',
+                   'position': 'P',
+                   'timePoint': 'T'}
+    images, imagesPaths = ReadImages(dataPath, identifiers)
+    print('s')
 
 def ReadImages2(inputDataPath):
     '''
@@ -179,4 +188,4 @@ def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
 
 
 if __name__ == '__main__':
-    Test_ReadImages()
+    Test_ReadImagesWithHarmonyExport()

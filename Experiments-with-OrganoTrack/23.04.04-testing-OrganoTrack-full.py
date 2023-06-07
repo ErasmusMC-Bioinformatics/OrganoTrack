@@ -4,6 +4,11 @@ import os
 
 # Import
 dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/input')
+identifiers = {'row': 'r',
+               'column': 'c',
+               'field': 'f',
+               'position': 'p',
+               'timePoint': 'sk'}
 exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output')
 
 # Check results
