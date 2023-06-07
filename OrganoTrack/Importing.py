@@ -72,38 +72,51 @@ def Test_ReadPlateLayout():
 def GetIdentifierValue(imageName, identifier):
     pattern = r"{0}(\d+)".format(identifier)
     match = re.search(pattern, imageName)
+    # re.search does not cut the imageName by the pattern found. If you do so, searching may be faster?
     return int(match.group(1))  # the identifier value
 
 def GetIdentifierInfo(imageName, identifiers):
     identifierValues = dict()
-    for identifierName, identifier in identifiers.items():
-        identiferValue = GetIdentifierValue(imageName, identifier)
+
+    for identifierName, identifierCharacter in identifiers.items():
+        identiferValue = GetIdentifierValue(imageName, identifierCharacter)
         identifierValues[identifierName] = identiferValue
+
     return identifierValues
 
-def ReadImages(importPath, identifiers):
-    print("\nReading data...")
 
-    # imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
-    # imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
-    imagesFileNamesWithExtensions = ['r02c02f02p01-ch1sk1fk1fl1.tiff']
+def ReadImages(importPath: Path, identifiers: dict):
+    print("Reading data...")
+
+    imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
+    imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
 
     imagesByWellsFieldsAndTimepoints = dict()
+    imagesPaths = []
 
     for imageName in imagesFileNamesWithExtensions:
         identifierValues = GetIdentifierInfo(imageName, identifiers)
-    pass
+        row, column, field, position, timePoint = identifierValues['row'], identifierValues['column'], \
+                                                  identifierValues['field'], identifierValues['position'], \
+                                                  identifierValues['timePoint']
+        well = (row, column)
+        if well not in imagesByWellsFieldsAndTimepoints:
+            print(f'Reading well {well}...')
+            imagesByWellsFieldsAndTimepoints[well] = dict()
+        if field not in imagesByWellsFieldsAndTimepoints[well]:
+            imagesByWellsFieldsAndTimepoints[well][field] = []
+        image = cv.imread(str(imagesDirectoryPath / imageName), cv.IMREAD_GRAYSCALE)
+        # Using cv.IMREAD_GRAYSCALE to convert any image to single channel, 8-bit grayscale image
+        # See more reading flags here: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
+        imagesByWellsFieldsAndTimepoints[well][field].append(image)
+        imagesPaths.append(imagesDirectoryPath / imageName) # still a list
 
+    return imagesByWellsFieldsAndTimepoints, imagesPaths
 
-    # inputImages = [cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE) for imagePath in importImagesPaths]
-    # Using cv.IMREAD_GRAYSCALE to convert any image to single channel, 8-bit grayscale image
-    # See more reading flags here: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
-    # print("Finished reading data.")
-    # return inputImages, importImagesPaths
 
 def Test_ReadImages():
-    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/input')
-    identifiers = {'row': 'r',
+    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-all-cis-data/input')
+    identifiers = {'row': 'r',  # identifiers should be an input by the user indeed, how to allow A3 input?
                    'column': 'c',
                    'field': 'f',
                    'position': 'p',
