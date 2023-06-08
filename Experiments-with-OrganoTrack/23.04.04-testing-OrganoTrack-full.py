@@ -44,7 +44,7 @@ loadExportedData = True
 exportedDataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
 
 
-RunOrganoTrack(dataPath, exportPath, checkResults,
+RunOrganoTrack(dataPath, identifiers, exportPath, checkResults,
                segment, segParams, saveSegParams, segmentedPaths,
                filterBoundary, filterOrganoids, filterBy,
                trackOrgs, timePoints, overlayTracking,
