@@ -18,15 +18,15 @@ import time
 from itertools import chain
 
 
-def RunOrganoTrack(importPath = None, exportPath = None, livePreview = False,
-                   segmentOrgs = True, segParams = None, saveSegParams = None, segmentedImagesPath = None,
-                   filterBoundary=False, filterOrgs = False, filterCriteria = None,
-                   trackOrgs = False, timePoints = None, overlayTrack = False,
-                   exportOrgMeasures = False, numberOfWellFields = None, morphPropsToMeasure = None,
-                   plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
+def RunOrganoTrack(experimentPath: Path, automateExecution=False): #, exportPath = None, livePreview = False,
+#                    segmentOrgs = True, segParams = None, saveSegParams = None, segmentedImagesPath = None,
+#                    filterBoundary=False, filterOrgs = False, filterCriteria = None,
+#                    trackOrgs = False, timePoints = None, overlayTrack = False,
+#                    exportOrgMeasures = False, numberOfWellFields = None, morphPropsToMeasure = None,
+#                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
 
     # inputImages, imageNames = ReadImages(importPath)
-    inputImages, imageNames = ReadImages(importPath)
+    inputImages, imageNames = ReadImages(experimentPath)
     saveSegParams.append(imageNames)
     row_identifier, column_identifier, area_identifier, timepoint_identifier = 'R', 'C', 'F', 'T'
 
