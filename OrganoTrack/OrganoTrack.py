@@ -26,11 +26,9 @@ def RunOrganoTrack(experimentPath: Path, automateExecution=False): #, exportPath
 #                    plotData = False, loadDataForPlotting = False, pathDataForPlotting = None):
 
     # inputImages, imageNames = ReadImages(importPath)
-    inputImages, imageNames = ReadImages(experimentPath)
+    inputImages, imageNames = ReadImages(experimentPath, automateExecution, identifiers)
+
     saveSegParams.append(imageNames)
-    row_identifier, column_identifier, area_identifier, timepoint_identifier = 'R', 'C', 'F', 'T'
-
-
 
     # plateLayout = ReadPlateLayout(importPath)
     # plateLayout = UpdatePlateLayoutWithImageNames(plateLayout, imageNames)
