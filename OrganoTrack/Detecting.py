@@ -213,12 +213,6 @@ def SegmentWithOrganoSegPy(images: dict, segmentationParameters, saveSegmentatio
     displayScale = 0.5
     segmentedExportPath = segmentedExportPath / 'images'
 
-    # Edit here
-    # for well, wellFieldImages in images.items():
-    #     for field, fieldTimeImages in wellFieldImages.items():
-    #         for image, index in enumerate(fieldTimeImages):
-    #             images[well][field][index] = segment(image)
-
 
     for count, imgAnalysis in enumerate(images):
         if displaySegStep:
@@ -264,8 +258,6 @@ def SegmentWithOrganoSegPy(images: dict, segmentationParameters, saveSegmentatio
             cv.imwrite(str(segmentedExportPath / imagePaths[count].name), imgAnalysis)
 
     return segmentedImages
-
-
 
 
 def Test_SegmentWithOrganoSegPy():

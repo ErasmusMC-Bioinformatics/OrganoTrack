@@ -9,4 +9,4 @@ identifiers = {'row': 'r',
                'position': 'p',
                'timePoint': 'sk'}
 
-RunOrganoTrack(experimentPath, automateExecution, identifiers)
+RunOrganoTrack(experimentPath, identifiers, automateExecution)

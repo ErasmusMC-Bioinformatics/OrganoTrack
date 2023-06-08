@@ -7,15 +7,14 @@ from scipy import stats
 import re
 
 
-def ReadPlateLayout(inputDataPath):
+def ReadPlateLayout(inputDataPath: Path):
     '''
     :param plateLayoutDir: directory of plate layout file (.xlsx, .csv, or .tsv). The file must (!) follow directives.
     :return: A List of Lists, with elements as tuples (condition, concentration, concentration unit)
     '''
 
     print("\nReading plate layout...")
-
-    plateLayoutFile = sorted(os.listdir(inputDataPath))[1]  # the second element should be the 'plate_layout.*' file
+    plateLayoutFile = next(os.walk(inputDataPath))[2][0]
     plateLayoutDir = inputDataPath / plateLayoutFile
 
     extension = plateLayoutDir.suffix
@@ -87,7 +86,6 @@ def GetIdentifierInfo(imageName, identifiers):
 
 def ReadImages(importPath: Path, identifiers: dict):
     print("Reading data...")
-
     imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
     imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
 

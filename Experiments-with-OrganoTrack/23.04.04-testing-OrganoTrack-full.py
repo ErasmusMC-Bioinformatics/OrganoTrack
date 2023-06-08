@@ -3,33 +3,30 @@ from pathlib import Path
 import os
 
 # Import
-dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/input')
-identifiers = {'row': 'r',
-               'column': 'c',
-               'field': 'f',
-               'position': 'p',
-               'timePoint': 'sk'}
-exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output')
-
-# Check results
-checkResults = True
+dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/import')
+identifiers = {'row': 'R',
+               'column': 'C',
+               'field': 'F',
+               'position': 'P',
+               'timePoint': 'T'}
+exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/export')
 
 # Segmentation
 segment = False
 extraBlur = False
 blurSize = 3
 segParams = [0.5, 250, 150, extraBlur, 3]
-saveSegParams = [True, exportPath]
-segmentedPaths = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/segmented')
+saveSegParams = [False, exportPath]
+segmentedPaths = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/export/segmented')
 
 # Selection of organoids
-filterBoundary = False
+filterBoundary = True
 filterOrganoids = False
 filterBy = ['area', 450, 'roundness', 0.5]  # minimum filter
 
 
 # Track organoids
-trackOrgs = False
+trackOrgs = True
 timePoints = 4
 overlayTracking = True
 
@@ -44,7 +41,7 @@ loadExportedData = True
 exportedDataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
 
 
-RunOrganoTrack(dataPath, identifiers, exportPath, checkResults,
+RunOrganoTrack(dataPath, identifiers,
                segment, segParams, saveSegParams, segmentedPaths,
                filterBoundary, filterOrganoids, filterBy,
                trackOrgs, timePoints, overlayTracking,

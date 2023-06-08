@@ -57,6 +57,13 @@ def MakeDirectory(path: Path):
         raise Exception("Could not find or create directory '" + str(path.absolute()) + "'.")
 
 
+def UpdateTrackedStack(stack: np.ndarray, highestTrackIDnum, field):
+    if field != 1:
+        stack = np.where(stack != 0, stack + highestTrackIDnum, stack)
+        return stack
+    else:
+        return stack
+
 def track(segmentedTimelapseImages):
     '''
     :param segmentedTimelapseImages: a list of images (numpy arrays) that belong to one timelapse set
