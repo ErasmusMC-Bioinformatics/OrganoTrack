@@ -80,32 +80,38 @@ def ExportImageStackMeasurements(outputPath, propertiesToMeasure, imageStacks, i
         # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
 
         for propertyName in propertiesToMeasure:  # if 'roundness'
-            for i in range(len(imageStacks)):       # for each stack
 
-                # > Create the dataframe
-                size = (np.max(imageStacks[i]) + 1,     # the highest label in the whole stack + 1
-                        imageStacks[i].shape[0])        # num of images in stack (i.e. num of time points)
-                # the first element has +1 so that index numbers in the df/spreadsheet are equal to the label numbers
-                data = pd.DataFrame(np.ndarray(size, dtype=str))
+            for well, wellFieldImages in imageStacks.items():
+                sortedFields = sorted(wellFieldImages, key=int)
 
-                # > Fill the dataframe
-                for t in range(imageStacks[i].shape[0]):        # for each image in the stack
-                    regions = regionprops(imageStacks[i][t])        # get RegionProperties objects
-                    for region in regions:                          # for each RP object
-                        if propertyName == 'roundness':
-                            value = CalculateRoundness(getattr(region, 'area'), getattr(region, 'perimeter'))
-                        else:
-                            value = getattr(region, propertyName)           # get the property value of that region
-                        label = region.label                            # get the label
-                        data.iloc[label, t] = str(value)                # store the property value by its label in df
+                for field in sortedFields:
 
-                # > Load dataframe into spreadsheet
+                    for i in range(len(imageStacks)):       # for each stack
 
-                data.to_excel(writer, sheet_name=propertyName, startrow=1, startcol=i * (size[1] + 2))
-                # Within .to_excel(), startrow/col are 0-indexed. Startcol calculated to fit df's next to each other
+                        # > Create the dataframe
+                        size = (np.max(imageStacks[i]) + 1,     # the highest label in the whole stack + 1
+                                imageStacks[i].shape[0])        # num of images in stack (i.e. num of time points)
+                        # the first element has +1 so that index numbers in the df/spreadsheet are equal to the label numbers
+                        data = pd.DataFrame(np.ndarray(size, dtype=str))
 
-                writer.sheets[propertyName].cell(row=1, column=i * (size[1] + 2) + 1).value = imageConditions[i]
-                # Within .cell(), row and column are 1-indexed
+                        # > Fill the dataframe
+                        for t in range(imageStacks[i].shape[0]):        # for each image in the stack
+                            regions = regionprops(imageStacks[i][t])        # get RegionProperties objects
+                            for region in regions:                          # for each RP object
+                                if propertyName == 'roundness':
+                                    value = CalculateRoundness(getattr(region, 'area'), getattr(region, 'perimeter'))
+                                else:
+                                    value = getattr(region, propertyName)           # get the property value of that region
+                                label = region.label                            # get the label
+                                data.iloc[label, t] = str(value)                # store the property value by its label in df
+
+                        # > Load dataframe into spreadsheet
+
+                        data.to_excel(writer, sheet_name=propertyName, startrow=1, startcol=i * (size[1] + 2))
+                        # Within .to_excel(), startrow/col are 0-indexed. Startcol calculated to fit df's next to each other
+
+                        writer.sheets[propertyName].cell(row=1, column=i * (size[1] + 2) + 1).value = imageConditions[i]
+                        # Within .cell(), row and column are 1-indexed
 
 
 def ExportSingleImageMeasurements(outputPath, propertiesToMeasure, singleImages, imageConditions):

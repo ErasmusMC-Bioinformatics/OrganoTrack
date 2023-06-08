@@ -65,7 +65,7 @@ def RunOrganoTrack(importPath: Path, identifiers,
             highestTrackIDnum = 0
             sortedFields = sorted(wellFieldImages, key=int)
 
-            for field, fieldTimeImages in wellFieldImages.items():
+            for field in sortedFields:
                 print(f'Field = {field}')
                 timeLapseSet = inputImages[well][field]
                 trackedTimeLapseSet = track(timeLapseSet)
@@ -115,7 +115,6 @@ def RunOrganoTrack(importPath: Path, identifiers,
         #         overlayImages = DrawRegionsOnImages(trackedSets[i], stack(maskedImages[i]), (255, 255, 255), 50, (0, 255, 0))  # np.array, likely 3D
         #         Output('Overlay', overlayImages, i)
         #         print('tracking')
-    #
     # if exportOrgMeasures:
     #     if trackOrgs:
     #         measuresFileName = 'trackedMeasures.xlsx'
@@ -124,9 +123,6 @@ def RunOrganoTrack(importPath: Path, identifiers,
     #                         for i in range((len(trackedSets) + numberOfWellFields - 1) // numberOfWellFields)]
     #         ExportImageStackMeasurements(exportPath / measuresFileName, morphPropsToMeasure, exportStacks, conditions)
     #         print('h')
-    #
-    #
-
 
 
 if __name__ == '__main__':
