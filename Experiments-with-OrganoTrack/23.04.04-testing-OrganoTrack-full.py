@@ -21,8 +21,8 @@ segmentedPaths = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/t
 
 # Selection of organoids
 filterBoundary = True
-filterOrganoids = False
-filterBy = ['area', 450, 'roundness', 0.5]  # minimum filter
+filterOrganoids = True
+filterBy = ['area', 150] #, 'roundness', 0.5]  # minimum filter
 
 
 # Track organoids

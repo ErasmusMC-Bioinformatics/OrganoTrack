@@ -78,52 +78,69 @@ def CreateDfForExport(imageStack):
                         columns=timePointLabels)
     return data
 
-def FillInDfForExport(imageStack, propertyName, propertyMeasurementsForTracks):
+def FillInDfForExport(imageStack, propertyName, propertyMeasurementsForTracks, well, field):
 
     for timePoint in range(imageStack.shape[0]):  # for each image in the stack
         regions = regionprops(imageStack[timePoint])  # get RegionProperties objects
         for region in regions:  # for each RP object
+            print(f'well {well}, field {field}, timepoint {timePoint}, region label: {region.label}')
             if propertyName == 'roundness':
                 value = CalculateRoundness(getattr(region, 'area'), getattr(region, 'perimeter'))
             else:
                 value = getattr(region, propertyName)  # get the property value of that region
-            label = region.label
+            label = region.label        # the label is the integer skimage label of the object
             timePointLabel = 't{}'.format(timePoint)
             propertyMeasurementsForTracks.loc[label, timePointLabel] = str(value)
-
+        print('f')
     return propertyMeasurementsForTracks
 
 
-def MeasureAndExport(outputPath, propertiesToMeasure, imageStacks, imageConditions):
+def GetWellConditionText(plateLayout, well):
+    wellCondition = plateLayout[well[0] - 1][well[1] - 1]  # get plateLayout list of condition, concentration, and unit
+    wellConditionStrings = [str(element) for element in wellCondition]  # convert the float concentration to string
+    wellCoordinates = ['well', str(well)]  # get well coordinates to add
+    return ' '.join(wellCoordinates + wellConditionStrings)  # join all into one string
+
+
+def MeasureAndExport(outputPath, propertiesToMeasure, imageStacks, plateLayout):
 
     with pd.ExcelWriter(str(outputPath.absolute())) as writer:
-        # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
+    # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
 
         for propertyName in propertiesToMeasure:
-
+            print(f'measuring {propertyName}')
             for wellIndex, (well, wellFieldImages) in enumerate(imageStacks.items()):
                 print(f'Well {well}')
                 sortedFields = sorted(wellFieldImages, key=int)
-
+                latestExportRowForWell = 1
                 for field in sortedFields:
                     print(f'Field {field}')
                     imageStack = imageStacks[well][field]
 
                     propertyMeasurementsForTracks = CreateDfForExport(imageStack)
-                    propertyMeasurementsForTracks = FillInDfForExport(imageStack, propertyName, propertyMeasurementsForTracks)
-
+                    propertyMeasurementsForTracks = FillInDfForExport(imageStack, propertyName, propertyMeasurementsForTracks, well, field)
 
                     numberOfTimePoints = imageStack.shape[0]
-                    # > Load dataframe into spreadsheet
+                        # > Load dataframe into spreadsheet
+                    wellCondition = GetWellConditionText(plateLayout, well)
 
-                    propertyMeasurementsForTracks.to_excel(writer, sheet_name=propertyName, startrow=1, startcol=wellIndex * (numberOfTimePoints + 2))
-                    # Within .to_excel(), startrow/col are 0-indexed. Startcol calculated to fit df's next to each other
-                    wellCondition = imageConditions[well[0]-1][well[1]-1]
-                    wellConditionStrings = [str(element) for element in wellCondition]
-                    wellConditionSpaces = ' '.join(wellConditionStrings)
-                    writer.sheets[propertyName].cell(row=1, column=wellIndex * (numberOfTimePoints + 2) + 1).value = wellConditionSpaces
-                    # Within .cell(), row and column are 1-indexed
-    print('f')
+                    if field != 1:  # assumes that the first field is always numbered 1
+                        propertyMeasurementsForTracks.to_excel(writer, sheet_name=propertyName,
+                                                               startrow=latestExportRowForWell,
+                                                               startcol=wellIndex * (numberOfTimePoints + 2),
+                                                               header=False)
+                        latestExportRowForWell += propertyMeasurementsForTracks.shape[0]
+                    else:
+                        propertyMeasurementsForTracks.to_excel(writer, sheet_name=propertyName,
+                                                               startrow=latestExportRowForWell,
+                                                               startcol=wellIndex * (numberOfTimePoints + 2))
+                        # Within .to_excel(), startrow/col are 0-indexed. Startcol calculated to fit df's next to each other
+                        latestExportRowForWell += propertyMeasurementsForTracks.shape[0] + 1
+
+                        writer.sheets[propertyName].cell(row=1, column=wellIndex * (
+                                    numberOfTimePoints + 2) + 1).value = wellCondition
+                        # Within .cell(), row and column are 1-indexed
+
 
 
 
