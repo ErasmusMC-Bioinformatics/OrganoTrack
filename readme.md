@@ -13,6 +13,8 @@ Input data requirements:
 - And alphanumeric sorting should sort the images in this order.
 - Ensure that each image is unique in terms of: well, field, position, timepoint
 
+Plate layout reads uM, not μM
+
 Functionality to add: convert A2 well format to row, column format, or vice versa.
 Ensure robustness across any naming convention
 - e.g. D4 1, D4 2 (2 same well, field, timepoint, different position)
@@ -34,3 +36,4 @@ All naming patterns I have:
 
 True patterns: 
 wells, magnifications, fields, positions, timepoints (no channels currently)
+

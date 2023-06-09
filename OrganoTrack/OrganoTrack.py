@@ -1,6 +1,6 @@
 from OrganoTrack.Importing import ReadImages, ReadImages2, ReadPlateLayout, UpdatePlateLayoutWithImageNames
 from OrganoTrack.Detecting import SegmentWithOrganoSegPy
-from OrganoTrack.Exporting import SaveData, ExportImageStackMeasurements, ExportSingleImageMeasurements
+from OrganoTrack.Exporting import SaveData, MeasureAndExport, ExportSingleImageMeasurements
 from OrganoTrack.Filtering import FilterByFeature, RemoveBoundaryObjects
 from OrganoTrack.Displaying import DisplayImages, Display, ConvertLabelledImageToBinary, displayingTrackedSet, ExportImageWithContours, Mask
 from OrganoTrack.Tracking import track, SaveImages, MakeDirectory, stack, LabelAndStack, Label, UpdateTrackedStack
@@ -18,7 +18,7 @@ import time
 from itertools import chain
 
 
-def RunOrganoTrack(importPath: Path, identifiers,
+def RunOrganoTrack(importPath: Path, identifiers, exportPath: Path,
                    segmentOrgs = False, segParams = None, saveSegParams = None, segmentedImagesPath = None,
                    filterBoundary=False, filterOrgs = False, filterCriteria = None,
                    trackOrgs = False, timePoints = None, overlayTrack = False,
@@ -86,6 +86,13 @@ def RunOrganoTrack(importPath: Path, identifiers,
                 inputImages[well][field] = trackedTimeLapseSet2
 
     print('h')
+
+    if exportOrgMeasures:
+        measuresFileName = 'trackedMeasures.xlsx'
+        MeasureAndExport(exportPath / measuresFileName, morphPropsToMeasure, inputImages, plateLayout)
+        print('h')
+
+
         # if overlayTrack:
         #     # Create masks
         #     maskedImages = [Mask(ori, pred) for ori, pred in zip(inputImages, binaryTrackedList)]
@@ -115,14 +122,6 @@ def RunOrganoTrack(importPath: Path, identifiers,
         #         overlayImages = DrawRegionsOnImages(trackedSets[i], stack(maskedImages[i]), (255, 255, 255), 50, (0, 255, 0))  # np.array, likely 3D
         #         Output('Overlay', overlayImages, i)
         #         print('tracking')
-    # if exportOrgMeasures:
-    #     if trackOrgs:
-    #         measuresFileName = 'trackedMeasures.xlsx'
-    #         conditions = [" ".join(str(item) for item in alist) for alist in plateLayout[1][1:8]]
-    #         exportStacks = [trackedSets[i * numberOfWellFields:(i + 1) * numberOfWellFields]
-    #                         for i in range((len(trackedSets) + numberOfWellFields - 1) // numberOfWellFields)]
-    #         ExportImageStackMeasurements(exportPath / measuresFileName, morphPropsToMeasure, exportStacks, conditions)
-    #         print('h')
 
 
 if __name__ == '__main__':
