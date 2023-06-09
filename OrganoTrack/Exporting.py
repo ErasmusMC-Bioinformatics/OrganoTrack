@@ -109,10 +109,12 @@ def MeasureAndExport(outputPath, propertiesToMeasure, imageStacks, plateLayout):
 
         for propertyName in propertiesToMeasure:
             print(f'measuring {propertyName}')
+            latestExportColumnForWell = 0  # 0 for the first well
             for wellIndex, (well, wellFieldImages) in enumerate(imageStacks.items()):
                 print(f'Well {well}')
                 sortedFields = sorted(wellFieldImages, key=int)
                 latestExportRowForWell = 1
+
                 for field in sortedFields:
                     print(f'Field {field}')
                     imageStack = imageStacks[well][field]
@@ -120,26 +122,25 @@ def MeasureAndExport(outputPath, propertiesToMeasure, imageStacks, plateLayout):
                     propertyMeasurementsForTracks = CreateDfForExport(imageStack)
                     propertyMeasurementsForTracks = FillInDfForExport(imageStack, propertyName, propertyMeasurementsForTracks, well, field)
 
-                    numberOfTimePoints = imageStack.shape[0]
-                        # > Load dataframe into spreadsheet
+                    # > Load dataframe into spreadsheet
                     wellCondition = GetWellConditionText(plateLayout, well)
 
                     if field != 1:  # assumes that the first field is always numbered 1
                         propertyMeasurementsForTracks.to_excel(writer, sheet_name=propertyName,
                                                                startrow=latestExportRowForWell,
-                                                               startcol=wellIndex * (numberOfTimePoints + 2),
+                                                               startcol=latestExportColumnForWell,
                                                                header=False)
                         latestExportRowForWell += propertyMeasurementsForTracks.shape[0]
                     else:
                         propertyMeasurementsForTracks.to_excel(writer, sheet_name=propertyName,
                                                                startrow=latestExportRowForWell,
-                                                               startcol=wellIndex * (numberOfTimePoints + 2))
+                                                               startcol=latestExportColumnForWell)
                         # Within .to_excel(), startrow/col are 0-indexed. Startcol calculated to fit df's next to each other
                         latestExportRowForWell += propertyMeasurementsForTracks.shape[0] + 1
 
-                        writer.sheets[propertyName].cell(row=1, column=wellIndex * (
-                                    numberOfTimePoints + 2) + 1).value = wellCondition
+                        writer.sheets[propertyName].cell(row=1, column=1+latestExportColumnForWell).value = wellCondition
                         # Within .cell(), row and column are 1-indexed
+                latestExportColumnForWell += propertyMeasurementsForTracks.shape[1] + 2
 
 
 
