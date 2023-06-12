@@ -104,28 +104,29 @@ def GetWellConditionText(plateLayout, well):
 
 def MeasureAndExport(outputPath, propertiesToMeasure, imageStacks, plateLayout):
 
+    trackedMeasurementsPerWell = dict()
     with pd.ExcelWriter(str(outputPath.absolute())) as writer:
     # path.absolute() contains the entire path to .xlsx file, i.e. /home/... in Linux or C:/... in Windows
 
         for propertyName in propertiesToMeasure:
-            print(f'measuring {propertyName}')
+            trackedMeasurementsPerWell[propertyName] = dict()
             latestExportColumnForWell = 0  # 0 for the first well
             for wellIndex, (well, wellFieldImages) in enumerate(imageStacks.items()):
-                print(f'Well {well}')
                 sortedFields = sorted(wellFieldImages, key=int)
                 latestExportRowForWell = 1
-
+                trackedDFs = []
                 for field in sortedFields:
-                    print(f'Field {field}')
+                    print(f'Measuring {propertyName} at well {well}, field {field}')
                     imageStack = imageStacks[well][field]
 
                     propertyMeasurementsForTracks = CreateDfForExport(imageStack)
                     propertyMeasurementsForTracks = FillInDfForExport(imageStack, propertyName, propertyMeasurementsForTracks, well, field)
+                    trackedDFs.append(propertyMeasurementsForTracks)
 
-                    # > Load dataframe into spreadsheet
                     wellCondition = GetWellConditionText(plateLayout, well)
 
-                    if field != 1:  # assumes that the first field is always numbered 1
+                    if field != 1:  # this assumes that the first field to export is always numbered 1
+                                    # however, the first field in the well selection may have a different number
                         propertyMeasurementsForTracks.to_excel(writer, sheet_name=propertyName,
                                                                startrow=latestExportRowForWell,
                                                                startcol=latestExportColumnForWell,
@@ -141,10 +142,9 @@ def MeasureAndExport(outputPath, propertiesToMeasure, imageStacks, plateLayout):
                         writer.sheets[propertyName].cell(row=1, column=1+latestExportColumnForWell).value = wellCondition
                         # Within .cell(), row and column are 1-indexed
                 latestExportColumnForWell += propertyMeasurementsForTracks.shape[1] + 2
+                trackedMeasurementsPerWell[propertyName][well] = pd.concat(trackedDFs)
 
-
-
-
+    return trackedMeasurementsPerWell
 
 
 def ExportSingleImageMeasurements(outputPath, propertiesToMeasure, singleImages, imageConditions):

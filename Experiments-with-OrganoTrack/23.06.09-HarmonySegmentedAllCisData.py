@@ -1,6 +1,10 @@
 from OrganoTrack.OrganoTrack import RunOrganoTrack
 from pathlib import Path
 import os
+from datetime import datetime
+
+dateTimeNow = datetime.now()
+print(dateTimeNow)
 
 # Import
 dataPath = Path('/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/import')

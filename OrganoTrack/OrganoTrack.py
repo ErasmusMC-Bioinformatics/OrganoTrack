@@ -9,6 +9,7 @@ from OrganoTrack.Tracking import track, SaveImages, MakeDirectory, stack, LabelA
 import cv2 as cv
 from pathlib import Path
 from PIL import Image
+from datetime import datetime
 from OrganoTrack.ImageHandling import DrawRegionsOnImages
 import numpy as np
 import pandas as pd
@@ -62,6 +63,7 @@ def RunOrganoTrack(importPath: Path, identifiers, exportPath: Path,
 
     if trackOrgs:
         for well, wellFieldImages in inputImages.items():
+            print(f'Well {well}')
             highestTrackIDnum = 0
             sortedFields = sorted(wellFieldImages, key=int)
 
@@ -89,7 +91,9 @@ def RunOrganoTrack(importPath: Path, identifiers, exportPath: Path,
 
     if exportOrgMeasures:
         measuresFileName = 'trackedMeasures.xlsx'
-        MeasureAndExport(exportPath / measuresFileName, morphPropsToMeasure, inputImages, plateLayout)
+        trackedMeasurementsPerWell = MeasureAndExport(exportPath / measuresFileName, morphPropsToMeasure, inputImages, plateLayout)
+        dateTimeNow2 = datetime.now()
+        print(dateTimeNow2)
         print('h')
 
 
