@@ -63,27 +63,26 @@ def RunOrganoTrack(importPath: Path, identifiers, exportPath: Path,
 
     if trackOrgs:
         for well, wellFieldImages in inputImages.items():
-            print(f'Well {well}')
             highestTrackIDnum = 0
             sortedFields = sorted(wellFieldImages, key=int)
 
             for field in sortedFields:
-                print(f'Field = {field}')
+                print(f'Tracking well {well}, field = {field}')
                 timeLapseSet = inputImages[well][field]
                 trackedTimeLapseSet = track(timeLapseSet)
 
-                non_zero_values = trackedTimeLapseSet[trackedTimeLapseSet != 0]
-                min_value = np.min(non_zero_values)
-                max_value = np.max(non_zero_values)
-                print(f'Before update: min = {min_value}, max = {max_value}')
-                print(f'Number to add = {highestTrackIDnum}')
+                # non_zero_values = trackedTimeLapseSet[trackedTimeLapseSet != 0]
+                # min_value = np.min(non_zero_values)
+                # max_value = np.max(non_zero_values)
+                # print(f'Before update: min = {min_value}, max = {max_value}')
+                # print(f'Number to add = {highestTrackIDnum}')
                 trackedTimeLapseSet2 = np.where(trackedTimeLapseSet != 0, trackedTimeLapseSet + highestTrackIDnum, trackedTimeLapseSet)
                 highestTrackIDnum = np.max(trackedTimeLapseSet2)
 
-                non_zero_values2 = trackedTimeLapseSet2[trackedTimeLapseSet2 != 0]
-                min_value2 = np.min(non_zero_values2)
-                max_value2 = np.max(non_zero_values2)
-                print(f'After update: min = {min_value2}, max = {max_value2}')
+                # non_zero_values2 = trackedTimeLapseSet2[trackedTimeLapseSet2 != 0]
+                # min_value2 = np.min(non_zero_values2)
+                # max_value2 = np.max(non_zero_values2)
+                # print(f'After update: min = {min_value2}, max = {max_value2}')
 
                 inputImages[well][field] = trackedTimeLapseSet2
 
