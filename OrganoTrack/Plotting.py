@@ -242,7 +242,34 @@ def GatherFeatureAcrossReplicatesAndConcentrationsForEachTimepoint(featureMeasur
 
     return featureAcrossRepsAndConcsForEachTimePoint
 
-def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, featureName, timePoint, ax):
+
+def CreateViolinPlotAcrossRepsAndConcsForEachTimepoint(featureData, featureName, timePoint, ax):
+    data = featureData[timePoint]['data']
+
+    violins = ax.violinplot(data, showextrema=False)
+    ax.set_ylabel(featureName.capitalize())
+    ax.set_xlabel(r'Cisplatin concentration ($\mu$M), replicates')
+    ax.set_xticks(np.arange(1, 22))
+    if featureName == 'solidity':
+        ax.set_ylim([0.75, 1])
+
+    concValues = [0, 0.2, 1, 2, 3, 5, 25]
+
+    xTickLabels = [f'{conc}, rep {rep}' for conc in concValues for rep in [1, 2, 3]]
+    xTickLabels = [currentLabel+f'\n(n={len(data[i])})' for i, currentLabel in enumerate(xTickLabels)]
+    ax.set_xticklabels(xTickLabels, rotation=45, ha='right')
+
+    palette = ['b', 'g', 'r', 'c', 'm', 'k', 'y']
+    for i, pc in enumerate(violins['bodies']):
+        color = palette[i // 3 % len(palette)]
+        pc.set_facecolor(color)
+
+    plt.tight_layout()
+
+def SetXtickLabelsForFeaturePlotAcrossRepsAndConcsForEachTimePoint(data, ax):
+    pass
+
+def CreateSubBoxPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, featureName, timePoint, ax):
     data = featureData[timePoint]['data']
     xs = featureData[timePoint]['jitter']
 
@@ -252,7 +279,8 @@ def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, featureName, t
     ax.boxplot(data, showfliers=False)
     ax.set_ylabel(featureName.capitalize())
     ax.set_xlabel(r'Cisplatin concentration ($\mu$M), replicates')
-    ax.set_ylim([0, 1])
+    if featureName == 'eccentricity':
+        ax.set_ylim([0, 1])
 
     # Scatter plots
     for i, (x, val) in enumerate(zip(xs, data)):
@@ -265,36 +293,6 @@ def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, featureName, t
     xTickLabels = [currentLabel+f'\n(n={len(data[i])})' for i, currentLabel in enumerate(xTickLabels)]
     ax.set_xticklabels(xTickLabels, rotation=45, ha='right')
     plt.tight_layout()
-
-
-plt.rcParams.update({'font.size': 20})
-fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(50, 18))
-
-# Add the first subplot (1 row, 1 column, position 1)
-ax1 = axes[0, 0]
-# fig1, ax1 = plt.subplots(figsize=(22, 7))
-ax1.set_title('Day 1')
-SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(eccentricityAcrossRepsAndConcsForEachTimePoint, 't0', ax1)
-# plt.show()
-
-ax2 = axes[0, 1]
-ax2.set_title('Day 2')
-SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(eccentricityAcrossRepsAndConcsForEachTimePoint, 't1', ax2)
-
-# Add the other six subplots (3 rows, 2 columns)
-ax3 = axes[1, 0]
-ax3.set_title('Day 4')
-SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(eccentricityAcrossRepsAndConcsForEachTimePoint, 't2', ax3)
-
-ax4 = axes[1, 1]
-ax4.set_title('Day 7')
-SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(eccentricityAcrossRepsAndConcsForEachTimePoint, 't3', ax4)
-
-# Adjust the spacing between subplots
-plt.tight_layout()
-
-# Show the figure
-plt.show()
 
 def RemoveNonFullTracks(featureMeasures):
     for well in list(featureMeasures.keys()):
@@ -311,9 +309,9 @@ def PlotFeatureAcrossRepsAndConcsForEachTimePoint(featureName, concentrations):
     featureAcrossRepsAndConcsForEachTimePoint = \
         GatherFeatureAcrossReplicatesAndConcentrationsForEachTimepoint(featureMeasures, concentrations)
 
-    CreatePlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint, featureName)
+    CreateBoxPlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint, featureName)
 
-def CreatePlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint, featureName):
+def CreateBoxPlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint, featureName):
     timePoints = list(featureAcrossRepsAndConcsForEachTimePoint.keys())
     timePoints = [timePoints[:2], timePoints[2:]]
 
@@ -325,7 +323,12 @@ def CreatePlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEach
     for i, row in enumerate(axes):
         for j, ax in enumerate(row):
             ax.set_title(days[i][j])
-            SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureAcrossRepsAndConcsForEachTimePoint,
+            # CreateSubBoxPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureAcrossRepsAndConcsForEachTimePoint,
+            #                                                  featureName, timePoints[i][j], ax)
+            CreateViolinPlotAcrossRepsAndConcsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint,
                                                              featureName, timePoints[i][j], ax)
     plt.tight_layout()
+
+    fig.savefig(f'/home/franz/Documents/mep/report/results/cisplatinDataset/{featureName}.png')
+
     plt.show()
