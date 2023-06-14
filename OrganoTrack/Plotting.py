@@ -242,7 +242,7 @@ def GatherFeatureAcrossReplicatesAndConcentrationsForEachTimepoint(featureMeasur
 
     return featureAcrossRepsAndConcsForEachTimePoint
 
-def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, timePoint, ax):
+def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, featureName, timePoint, ax):
     data = featureData[timePoint]['data']
     xs = featureData[timePoint]['jitter']
 
@@ -250,8 +250,8 @@ def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, timePoint, ax)
 
     # Plot the boxplots
     ax.boxplot(data, showfliers=False)
-    ax.set_ylabel('Eccentricity')
-    ax.set_xlabel(r'Cis conc. ($\mu$M), replicates')
+    ax.set_ylabel(featureName.capitalize())
+    ax.set_xlabel(r'Cisplatin concentration ($\mu$M), replicates')
     ax.set_ylim([0, 1])
 
     # Scatter plots
@@ -260,22 +260,22 @@ def SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureData, timePoint, ax)
         ax.scatter(x, val, alpha=0.4, c=color)
 
     # Set x-axis tick labels
-    # timePoints = ['d1', 'd2', 'd2', 'd7']
-    # xTickLabels = [f'{timePoint}, rep {rep}' for timePoint in timePoints for rep in [1, 2, 3]]
-    # xTickLabels = [currentLabel+f'\n(n={len(data[i])})' for i, currentLabel in enumerate(xTickLabels)]
-    # ax.set_xticklabels(xTickLabels, rotation=45, ha='right')
+    concValues = [0, 0.2, 1, 2, 3, 5, 25]
+    xTickLabels = [f'{conc}, rep {rep}' for conc in concValues for rep in [1, 2, 3]]
+    xTickLabels = [currentLabel+f'\n(n={len(data[i])})' for i, currentLabel in enumerate(xTickLabels)]
+    ax.set_xticklabels(xTickLabels, rotation=45, ha='right')
     plt.tight_layout()
 
 
 plt.rcParams.update({'font.size': 20})
-fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(50, 15))
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(50, 18))
 
 # Add the first subplot (1 row, 1 column, position 1)
 ax1 = axes[0, 0]
-fig1, ax1 = plt.subplots(figsize=(20,6))
+# fig1, ax1 = plt.subplots(figsize=(22, 7))
 ax1.set_title('Day 1')
 SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(eccentricityAcrossRepsAndConcsForEachTimePoint, 't0', ax1)
-plt.show()
+# plt.show()
 
 ax2 = axes[0, 1]
 ax2.set_title('Day 2')
@@ -295,3 +295,37 @@ plt.tight_layout()
 
 # Show the figure
 plt.show()
+
+def RemoveNonFullTracks(featureMeasures):
+    for well in list(featureMeasures.keys()):
+        df = featureMeasures[well]
+        df = df.replace('', np.nan)
+        df = df.dropna(subset=['t0', 't1', 't2', 't3'])
+        featureMeasures[well] = df
+    return featureMeasures
+
+def PlotFeatureAcrossRepsAndConcsForEachTimePoint(featureName, concentrations):
+    featureMeasures = trackedMeasurementsPerWell[featureName]
+    featureMeasures = RemoveNonFullTracks(featureMeasures)
+
+    featureAcrossRepsAndConcsForEachTimePoint = \
+        GatherFeatureAcrossReplicatesAndConcentrationsForEachTimepoint(featureMeasures, concentrations)
+
+    CreatePlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint, featureName)
+
+def CreatePlotAcrossRepsAndConsForEachTimepoint(featureAcrossRepsAndConcsForEachTimePoint, featureName):
+    timePoints = list(featureAcrossRepsAndConcsForEachTimePoint.keys())
+    timePoints = [timePoints[:2], timePoints[2:]]
+
+    days = [['Day 1', 'Day 2'],
+            ['Day 4', 'Day 7']]
+    plt.rcParams.update({'font.size': 20})
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(50, 18))
+
+    for i, row in enumerate(axes):
+        for j, ax in enumerate(row):
+            ax.set_title(days[i][j])
+            SubPlotFeatureAcrossRepsAndConcsForEachTimePoint(featureAcrossRepsAndConcsForEachTimePoint,
+                                                             featureName, timePoints[i][j], ax)
+    plt.tight_layout()
+    plt.show()
