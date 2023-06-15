@@ -34,7 +34,7 @@ def SegmentBySAM(image, model, modelCheckpoint):
 
 
 def main_loop():
-    st.title("Sam Annotator")
+    st.title("Sam Annotator. hello!")
     st.subheader("This app allows you to segment an image and generate a binary image with SAM")
     st.text("We use OpenCV, the Segment Anythin Model, and Streamlit for this demo")
 
