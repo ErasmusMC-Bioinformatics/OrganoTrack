@@ -1,0 +1,16 @@
+name: samGPU
+channels:
+  - nvidia
+  - pytorch
+dependencies:
+  - pytorch 
+  - torchvision 
+  - torchaudio 
+  - pytorch-cuda=11.8
+  - pip
+  - pip:
+      - segment-anything==1.0
+      - streamlit
+      - opencv-python
+      - matplotlib
+      - pillow
