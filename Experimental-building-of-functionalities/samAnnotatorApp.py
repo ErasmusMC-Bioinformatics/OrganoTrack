@@ -9,7 +9,7 @@ from streamlit_image_coordinates import streamlit_image_coordinates
 model_checkpoints = {'vit_b': 'Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
 
 
-def show_anns(objectsSegmentedBySAM):
+def create_rgba_array(objectsSegmentedBySAM):
     if len(objectsSegmentedBySAM) == 0:
         return
     sortedSAMobjects = sorted(objectsSegmentedBySAM, key=(lambda x: x['area']), reverse=True)  # in decreasing area
@@ -26,7 +26,6 @@ def show_anns(objectsSegmentedBySAM):
         samObjectSegmentataionArray = samObject['segmentation']
         color_mask = np.concatenate([np.random.randint(255, size=3), [90]])
         colorObjectMasks[samObjectSegmentataionArray] = color_mask
-    # ax.imshow(colorObjectMasks)
     return colorObjectMasks
 
 
@@ -47,36 +46,30 @@ def ensure_8_bit(image_16_bit):  # for now, assumes 16 bit and grayscale
 def main_loop():
     st.title("SAM Annotator.")
 
-    # Importing image
+    # Import image
     image_file = st.file_uploader("Upload Your Image", type=['jpg', 'png', 'jpeg', 'tiff', 'tif'])
     if not image_file:
         return
     image = Image.open(image_file)
     image = ensure_8_bit(image)
-    image2 = image.convert("RGBA")
     image_array = np.array(image)
 
-    # Segmenting with SAM
+    # Segment image with SAM
     image_bgr = cv.cvtColor(image_array, cv.COLOR_GRAY2RGB)
     model = 'vit_b'
-    sam_segmentation = segment_with_sam(image_bgr, model, model_checkpoints[model])  # SAM expects a 3 channel image
-    # mask = list of dicts. Each dict element belongs to one segmented object
-    # mask[0] = {'segmentation': array,
-    #            'area': e.g. 1539
-    #            'bbox': e.g. [0, 736, 51, 36]
-    #            'predicted_iou': e.g. 1.0169870853424072
-    #            'point_coords': e.g. [[16.875, 759.375]]
-    #            'stability_score': e.g. 0.9896439909934998
-    #            'crop_box': e.g. [0, 0, 1080, 1080]
+    sam_output = segment_with_sam(image_bgr, model, model_checkpoints[model])
 
-    # mask[0]['segmentation'] = boolean array of object, array with dimensions of image
+    # Create image overlay in RGBA PIL format
+    image_rgba_pil = image.convert("RGBA")
+    sam_seg_rgba_array = create_rgba_array(sam_output)
+    sam_seg_rgba_pil = Image.fromarray(sam_seg_rgba_array)
+    image_overlay_pil = Image.alpha_composite(image_rgba_pil, sam_seg_rgba_pil)
 
-    output = show_anns(sam_segmentation)
-    output = Image.fromarray(output)
-    im3 = Image.alpha_composite(image2, output)
-
-    value = streamlit_image_coordinates(im3, key='pil')
+    # Plot for coordinate clicking
+    value = streamlit_image_coordinates(image_overlay_pil, key='pil')
     st.write(value)
+
+
 
 
 if __name__ == '__main__':
