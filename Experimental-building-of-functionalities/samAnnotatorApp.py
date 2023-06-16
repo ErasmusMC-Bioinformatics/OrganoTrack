@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
+from streamlit_image_coordinates import streamlit_image_coordinates
 
 model_checkpoints = {'vit_b': 'Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
 
@@ -18,14 +19,15 @@ def show_anns(objectsSegmentedBySAM):
 
     imgHeight = sortedSAMobjects[0]['segmentation'].shape[0]  # look at just the first object
     imgWidth = sortedSAMobjects[0]['segmentation'].shape[1]
-    colorObjectMasks = np.ones((imgHeight, imgWidth, 4))  # 3D array, height x width x 4. i.e. a stack of 4 images
+    colorObjectMasks = np.ones((imgHeight, imgWidth, 4), dtype=np.uint8)  # 3D array, height x width x 4. i.e. a stack of 4 images
 
     colorObjectMasks[:, :, 3] = 0              # the last image in the stack = 0
     for samObject in sortedSAMobjects:     #
         samObjectSegmentataionArray = samObject['segmentation']
-        color_mask = np.concatenate([np.random.random(3), [0.35]])  # [ 0-1 , 0-1 , 0-1 , 0.35 ]
+        color_mask = np.concatenate([np.random.randint(255, size=3), [90]])
         colorObjectMasks[samObjectSegmentataionArray] = color_mask
-    ax.imshow(colorObjectMasks)
+    # ax.imshow(colorObjectMasks)
+    return colorObjectMasks
 
 
 def segment_with_sam(image: np.ndarray, model: str, modelCheckpoint: str):
@@ -43,7 +45,7 @@ def ensure_8_bit(image_16_bit):  # for now, assumes 16 bit and grayscale
 
 
 def main_loop():
-    st.title("SAM Annotator")
+    st.title("SAM Annotator.")
 
     # Importing image
     image_file = st.file_uploader("Upload Your Image", type=['jpg', 'png', 'jpeg', 'tiff', 'tif'])
@@ -51,6 +53,7 @@ def main_loop():
         return
     image = Image.open(image_file)
     image = ensure_8_bit(image)
+    image2 = image.convert("RGBA")
     image_array = np.array(image)
 
     # Segmenting with SAM
@@ -68,10 +71,12 @@ def main_loop():
 
     # mask[0]['segmentation'] = boolean array of object, array with dimensions of image
 
-    fig, ax = plt.subplots(figsize=(20, 20))
-    plt.imshow(image_array)
-    show_anns(sam_segmentation)
-    st.pyplot(fig)
+    output = show_anns(sam_segmentation)
+    output = Image.fromarray(output)
+    im3 = Image.alpha_composite(image2, output)
+
+    value = streamlit_image_coordinates(im3, key='pil')
+    st.write(value)
 
 
 if __name__ == '__main__':
