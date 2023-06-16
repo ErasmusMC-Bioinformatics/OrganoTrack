@@ -5,10 +5,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 
-modelCheckpoints = {'vit_b': 'Experimental-building-of-functionalities/sam_vit_b_01ec64.pth',
-                    'vit_h': 'sam_vit_h_4b8939.pth',
-                    'vit_l': 'sam_vit_l_0b3195.pth'}
-
+model_checkpoints = {'vit_b': 'Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
 
 
 def show_anns(objectsSegmentedBySAM):
@@ -28,33 +25,38 @@ def show_anns(objectsSegmentedBySAM):
         samObjectSegmentataionArray = samObject['segmentation']
         color_mask = np.concatenate([np.random.random(3), [0.35]])  # [ 0-1 , 0-1 , 0-1 , 0.35 ]
         colorObjectMasks[samObjectSegmentataionArray] = color_mask
-    return colorObjectMasks
+    ax.imshow(colorObjectMasks)
 
 
-
-def SegmentBySAM(image, model, modelCheckpoint):
+def segment_with_sam(image: np.ndarray, model: str, modelCheckpoint: str):
     sam = sam_model_registry[model](checkpoint=modelCheckpoint)
     sam.to(device='cuda')
     mask_generator = SamAutomaticMaskGenerator(sam)
     return mask_generator.generate(image)
 
 
+def ensure_8_bit(image_16_bit):  # for now, assumes 16 bit and grayscale
+    image_16_bit = image_16_bit.convert("I")
+    image_16_bit = np.array(image_16_bit)
+    image_8_bit = np.uint8(image_16_bit / np.max(image_16_bit) * 255)
+    return Image.fromarray(image_8_bit)
+
+
 def main_loop():
     st.title("SAM Annotator")
 
+    # Importing image
     image_file = st.file_uploader("Upload Your Image", type=['jpg', 'png', 'jpeg', 'tiff', 'tif'])
     if not image_file:
-        return None
+        return
+    image = Image.open(image_file)
+    image = ensure_8_bit(image)
+    image_array = np.array(image)
 
-    original_image = Image.open(image_file)
-    original_image = np.array(original_image)
-
-    original_image = (original_image / 256).astype('uint8')
-    model = list(modelCheckpoints.keys())[0]
-
-    image_file = cv.cvtColor(original_image, cv.COLOR_GRAY2RGB)
-
-    mask = SegmentBySAM(image_file, model, modelCheckpoints[model]) # SAM expects a 3 channel image
+    # Segmenting with SAM
+    image_bgr = cv.cvtColor(image_array, cv.COLOR_GRAY2RGB)
+    model = 'vit_b'
+    sam_segmentation = segment_with_sam(image_bgr, model, model_checkpoints[model])  # SAM expects a 3 channel image
     # mask = list of dicts. Each dict element belongs to one segmented object
     # mask[0] = {'segmentation': array,
     #            'area': e.g. 1539
@@ -66,16 +68,11 @@ def main_loop():
 
     # mask[0]['segmentation'] = boolean array of object, array with dimensions of image
 
-    plt.figure(figsize=(20, 20))
-    plt.imshow(image_file)
-    output = show_anns(mask)
-    plt.axis('off')
-    plt.show()
-
-    st.text("Original Image vs Processed Image")
-    st.image([original_image, output], width=600)
+    fig, ax = plt.subplots(figsize=(20, 20))
+    plt.imshow(image_array)
+    show_anns(sam_segmentation)
+    st.pyplot(fig)
 
 
 if __name__ == '__main__':
     main_loop()
-
