@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from streamlit_image_coordinates import streamlit_image_coordinates
 
-model_checkpoints = {'vit_b': 'Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
+model_checkpoints = {'vit_b': '/home/franz/OrganoTrack/Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
+
 
 
 def create_rgba_array(objectsSegmentedBySAM):
@@ -69,8 +70,38 @@ def main_loop():
     value = streamlit_image_coordinates(image_overlay_pil, key='pil')
     st.write(value)
 
+def click_remover():
+    image_path = '/home/franz/d2r1t3.tiff'
+    image_array = cv.imread(image_path, cv.IMREAD_GRAYSCALE)
+    image_pil = Image.fromarray(image_array)
+
+    # Segment image with SAM
+    image_bgr = cv.cvtColor(image_array, cv.COLOR_GRAY2RGB)
+    model = 'vit_b'
+    sam_output = segment_with_sam(image_bgr, model, model_checkpoints[model])
+
+    # Create image overlay in RGBA PIL format
+    image_rgba_pil = image_pil.convert("RGBA")
+    sam_seg_rgba_array = create_rgba_array(sam_output)
+    sam_seg_rgba_pil = Image.fromarray(sam_seg_rgba_array)
+    image_overlay_pil = Image.alpha_composite(image_rgba_pil, sam_seg_rgba_pil)
+
+    # Take coordinate
+    x = 904  # switch coordinates
+    y = 956
+    a = len(sam_output)
+    print(f'starting length {a}')
+    # Find object in list of sam outputs
+    for i, sam_object in enumerate(sam_output):
+        object_array = sam_object['segmentation']
+        if object_array[x][y]:
+            del sam_output[i]
+            break
+    b = len(sam_output)
+    print(f'ending length {a}')
+    print('f')
+
 
 if __name__ == '__main__':
-    main_loop()
-
-
+    # main_loop()
+    click_remover()
