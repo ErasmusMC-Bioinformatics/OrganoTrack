@@ -25,10 +25,10 @@ def show_anns(anns):
         color_mask = np.concatenate([np.random.random(3), [0.35]])
         img[m] = color_mask
     return img
-    # ax.imshow(img)
 
 def SegmentBySAM(image, model, modelCheckpoint):
     sam = sam_model_registry[model](checkpoint=modelCheckpoint)
+    sam.to(device='cuda')
     mask_generator = SamAutomaticMaskGenerator(sam)
     return mask_generator.generate(image)
 
@@ -60,7 +60,7 @@ def main_loop():
     model = list(modelCheckpoints.keys())[0]
 
     image_file = cv.cvtColor(original_image, cv.COLOR_GRAY2RGB)
-    mask = SegmentBySAM(image_file, model, modelCheckpoints[model]) # SAM expects a 3 channel image
+    mask = SegmentBySAM(image_file, model, modelCheckpoints[model])  # SAM expects a 3 channel image
 
     plt.figure(figsize=(20, 20))
     plt.imshow(image_file)
@@ -80,3 +80,4 @@ def main_loop():
 
 if __name__ == '__main__':
     main_loop()
+
