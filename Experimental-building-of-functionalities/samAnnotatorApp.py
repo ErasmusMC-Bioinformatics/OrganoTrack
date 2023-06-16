@@ -8,7 +8,10 @@ from streamlit_image_coordinates import streamlit_image_coordinates
 
 model_checkpoints = {'vit_b': '/home/franz/OrganoTrack/Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
 
-
+st.set_page_config(
+    page_title="SAM Annotator",
+    layout="wide",
+)
 
 def create_rgba_array(objectsSegmentedBySAM):
     if len(objectsSegmentedBySAM) == 0:
@@ -29,7 +32,7 @@ def create_rgba_array(objectsSegmentedBySAM):
         colorObjectMasks[samObjectSegmentataionArray] = color_mask
     return colorObjectMasks
 
-@st.experimental_memo
+
 def segment_with_sam(image: np.ndarray):
     image_bgr = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
     model = 'vit_b'
@@ -53,16 +56,13 @@ def remove_clicked_object(sam_output, coordinates):
     for i, sam_object in enumerate(sam_output):
         object_array = sam_object['segmentation']
         if object_array[x][y]:
-            del sam_output[i]
-            break
+            del sam_output[i]  # this removes the first object that hits, though the clicked object may overlap with
+            break              # the hit object, and you remove the unintended hit object
     return sam_output
 
 
 def main_loop():
     st.title("SAM Annotator.")
-    i = 0
-    st.markdown(str(i))
-    i += 1
 
     # Import image
     image_file = st.file_uploader("Upload Your Image", type=['jpg', 'png', 'jpeg', 'tiff', 'tif'])
@@ -71,36 +71,38 @@ def main_loop():
     image = Image.open(image_file)
     image = ensure_8_bit(image)
     image_array = np.array(image)
+    image_rgba_pil = image.convert("RGBA")
 
     # Segment image with SAM
     sam_output = segment_with_sam(image_array)
 
-    # Create image overlay in RGBA PIL format
-    image_rgba_pil = image.convert("RGBA")
-    sam_seg_rgba_array = create_rgba_array(sam_output)
-    sam_seg_rgba_pil = Image.fromarray(sam_seg_rgba_array)
-    image_overlay_pil = Image.alpha_composite(image_rgba_pil, sam_seg_rgba_pil)
+    # creating a single-element container
+    placeholder = st.empty()
+    i = 0
+    while True:
+        # Create image overlay in RGBA PIL format
+        sam_seg_rgba_array = create_rgba_array(sam_output)
+        sam_seg_rgba_pil = Image.fromarray(sam_seg_rgba_array)
+        image_overlay_pil = Image.alpha_composite(image_rgba_pil, sam_seg_rgba_pil)
+        with placeholder.container():
+            # Receive click
+            value = streamlit_image_coordinates(image_overlay_pil, key=f'pil{i}')
+            st.write(value)
+            sam_output = remove_clicked_object(sam_output, value)
+        i += 1
 
-    # Receive click
-    value = streamlit_image_coordinates(image_overlay_pil, key='pil')
-    st.write(value)
-    st.markdown(str(i))
-    i += 1
 
-    sam_output_new = remove_clicked_object(sam_output, value)
-
-    # Create image overlay in RGBA PIL format
-
-    sam_seg_rgba_array_new = create_rgba_array(sam_output_new)
-    sam_seg_rgba_pil_new = Image.fromarray(sam_seg_rgba_array_new)
-    image_overlay_pil_new = Image.alpha_composite(image_rgba_pil, sam_seg_rgba_pil_new)
-
-    # Plot for coordinate clicking
-    value = streamlit_image_coordinates(image_overlay_pil_new, key='pil2')
-    st.write(value)
-    st.markdown(str(i))
-    i += 1
-
+    # sam_output_new = remove_clicked_object(sam_output, value)
+    #
+    # # Create image overlay in RGBA PIL format
+    #
+    # sam_seg_rgba_array_new = create_rgba_array(sam_output_new)
+    # sam_seg_rgba_pil_new = Image.fromarray(sam_seg_rgba_array_new)
+    # image_overlay_pil_new = Image.alpha_composite(image_rgba_pil, sam_seg_rgba_pil_new)
+    #
+    # # Plot for coordinate clicking
+    # value = streamlit_image_coordinates(image_overlay_pil_new, key='pil2')
+    # st.write(value)
 
 
 def click_remover():
