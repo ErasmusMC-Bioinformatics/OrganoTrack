@@ -5,6 +5,9 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
 from streamlit_image_coordinates import streamlit_image_coordinates
+import base64
+from io import BytesIO
+
 
 model_checkpoints = {'vit_b': '/home/franz/OrganoTrack/Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
 
@@ -61,6 +64,26 @@ def remove_clicked_object(sam_output, coordinates):
     return sam_output
 
 
+def binarise_sam_output(sam_output):
+    object_list_boolean = [sam_output[seg_object]['segmentation'] for seg_object in range(len(sam_output))]
+    sumOfImageRegions = sum(object_list_boolean)
+    summedBooleanToBinaryMapping = np.zeros(np.max(sumOfImageRegions) + 1)
+
+    summedBooleanToBinaryMapping[1:] = 1  # assuming model vit_b
+
+    binarySamMask = summedBooleanToBinaryMapping[sumOfImageRegions]
+    binarySamMask = binarySamMask.astype(np.uint8)
+    _, binarySamMask = cv.threshold(binarySamMask, 0, 255, cv.THRESH_BINARY)  # anything more than 0 becomes full
+    return binarySamMask
+
+# function by Spidy20 at https://discuss.streamlit.io/t/how-to-download-image/3358/2
+def get_image_download_link(img,filename,text):
+    buffered = BytesIO()
+    img.save(buffered, format="JPEG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    href = f'<a href="data:file/txt;base64,{img_str}" download="{filename}">{text}</a>'
+    return href
+
 def main_loop():
     st.title("SAM Annotator.")
 
@@ -89,7 +112,15 @@ def main_loop():
             value = streamlit_image_coordinates(image_overlay_pil, key=f'pil{i}')
             st.write(value)
             sam_output = remove_clicked_object(sam_output, value)
+            binary_sam_mask = binarise_sam_output(sam_output)
+        st.image(binary_sam_mask)
+        ## Original image came from cv2 format, fromarray convert into PIL format
+        result = Image.fromarray(binary_sam_mask)
+        st.markdown(get_image_download_link(result, 'binary.png', 'Download ' + 'binary.png'), unsafe_allow_html=True)
+
         i += 1
+
+
 
 
     # sam_output_new = remove_clicked_object(sam_output, value)
