@@ -4,17 +4,17 @@ import pandas as pd
 from pathlib import Path
 # needed to install xlrd
 from scipy import stats
+import re
 
 
-def ReadPlateLayout(inputDataPath):
+def ReadPlateLayout(inputDataPath: Path):
     '''
     :param plateLayoutDir: directory of plate layout file (.xlsx, .csv, or .tsv). The file must (!) follow directives.
     :return: A List of Lists, with elements as tuples (condition, concentration, concentration unit)
     '''
 
     print("\nReading plate layout...")
-
-    plateLayoutFile = sorted(os.listdir(inputDataPath))[1]  # the second element should be the 'plate_layout.*' file
+    plateLayoutFile = next(os.walk(inputDataPath))[2][0]
     plateLayoutDir = inputDataPath / plateLayoutFile
 
     extension = plateLayoutDir.suffix
@@ -68,34 +68,69 @@ def Test_ReadPlateLayout():
     plateDirTSV = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/buildingPipeline_Input/plate_layout.tsv'
     ReadPlateLayout(dataPath)
 
-def ReadImages(inputDataPath):
-    '''
-    Read Images requires that the images are within a folder called '/images', that inputDataPath is the parent folder
-    of '/images', and that '/images' is teh first item in a list of files in the parent folder (hence line 77 calls
-    for the first element)
-    '''
-    print("\nReading data...")
+def GetIdentifierValue(imageName, identifier):
+    pattern = r"{0}(\d+)".format(identifier)
+    match = re.search(pattern, imageName)
+    # re.search does not cut the imageName by the pattern found. If you do so, searching may be faster?
+    return int(match.group(1))  # the identifier value
 
-    imagesFolderName = sorted(os.listdir(inputDataPath))[0]  # the first element should be the 'images' folder
-    imagesFolderDir = inputDataPath / imagesFolderName
+def GetIdentifierInfo(imageName, identifiers):
+    identifierValues = dict()
 
-    # > Get the names and extensions of the image files in the directory
-    inputImagesNames = sorted(os.listdir(imagesFolderDir))
+    for identifierName, identifierCharacter in identifiers.items():
+        identiferValue = GetIdentifierValue(imageName, identifierCharacter)
+        identifierValues[identifierName] = identiferValue
 
-    # > Create directory paths for each image file
-    inputImagesPaths = [imagesFolderDir / imageName for imageName in inputImagesNames]
+    return identifierValues
 
-    # > Read images
-    inputImages = [cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE) for imagePath in inputImagesPaths]
-    # Without any 2nd input to imread: IM_READ_COLOR by default: If set, always convert image to the 3 channel BGR color image. 
-    # Using IMREAD_GRAYSCALE: If set, always convert image to the single channel grayscale image (codec internal conversion).
-    # See more reading flags here: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
 
-    print("Finished reading data.")
+def ReadImages(importPath: Path, identifiers: dict):
+    print("Reading data...")
+    imagesDirectoryPath = importPath / next(os.walk(importPath))[1][0]  # nxt()->tuple(imPath, directories, other files)
+    imagesFileNamesWithExtensions = sorted(os.listdir(imagesDirectoryPath))
 
-    print("There is/are in total " + str(len(inputImages)) + " image(s).")
+    imagesByWellsFieldsAndTimepoints = dict()
+    imagesPaths = []
 
-    return inputImages, inputImagesPaths
+    for imageName in imagesFileNamesWithExtensions:
+        identifierValues = GetIdentifierInfo(imageName, identifiers)
+        row, column, field, position, timePoint = identifierValues['row'], identifierValues['column'], \
+                                                  identifierValues['field'], identifierValues['position'], \
+                                                  identifierValues['timePoint']
+        well = (row, column)
+        if well not in imagesByWellsFieldsAndTimepoints:
+            print(f'Reading well {well}...')
+            imagesByWellsFieldsAndTimepoints[well] = dict()
+        if field not in imagesByWellsFieldsAndTimepoints[well]:
+            imagesByWellsFieldsAndTimepoints[well][field] = []
+        image = cv.imread(str(imagesDirectoryPath / imageName), cv.IMREAD_GRAYSCALE)
+        # Using cv.IMREAD_GRAYSCALE to convert any image to single channel, 8-bit grayscale image
+        # See more reading flags here: https://docs.opencv.org/3.4/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
+        imagesByWellsFieldsAndTimepoints[well][field].append(image)
+        imagesPaths.append(imagesDirectoryPath / imageName) # still a list
+
+    return imagesByWellsFieldsAndTimepoints, imagesPaths
+
+
+def Test_ReadImages():
+    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-all-cis-data/input')
+    identifiers = {'row': 'r',  # identifiers should be an input by the user indeed, how to allow A3 input?
+                   'column': 'c',
+                   'field': 'f',
+                   'position': 'p',
+                   'timePoint': 'sk'}
+    images, imagesPaths = ReadImages(dataPath, identifiers)
+    print('s')
+
+def Test_ReadImagesWithHarmonyExport():
+    dataPath = Path('/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/all-images')
+    identifiers = {'row': 'R',  # identifiers should be an input by the user indeed, how to allow A3 input?
+                   'column': 'C',
+                   'field': 'F',
+                   'position': 'P',
+                   'timePoint': 'T'}
+    images, imagesPaths = ReadImages(dataPath, identifiers)
+    print('s')
 
 def ReadImages2(inputDataPath):
     '''
@@ -132,12 +167,13 @@ def ReadImage(imagePath):
     return cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE)
 
 
-def Test_ReadImages():
+def Test_ReadImage():
     dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/Cis-drug-screen-subset-of-Images_control-and-cis-field-1-all-times/r02c02f01p01-ch1sk1fk1fl1.tiff')
     inputImage = ReadImage(dataPath)
     m = stats.mode(inputImage)
     print(m[0])
     print('test')
+
 
 def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
     # to the right well in plate layout
@@ -150,4 +186,4 @@ def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
 
 
 if __name__ == '__main__':
-    Test_ReadImages()
+    Test_ReadImagesWithHarmonyExport()

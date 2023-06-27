@@ -188,7 +188,8 @@ def FillHoles(image):
     return filled_binary
 
 
-def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParameters):
+
+def SegmentWithOrganoSegPy(images: dict, segmentationParameters, saveSegmentationParameters):
     fudgeFactor, maxWindowSize, minObjectSize, extraBlur, blurSize, displaySegStep = segmentationParameters[0], \
                                                                                      segmentationParameters[1],\
                                                                                      segmentationParameters[2],\
@@ -211,6 +212,8 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
             os.mkdir(segmentedExportPath / 'images')
     displayScale = 0.5
     segmentedExportPath = segmentedExportPath / 'images'
+
+
     for count, imgAnalysis in enumerate(images):
         if displaySegStep:
             Display('1', imgAnalysis, displayScale)
@@ -255,8 +258,6 @@ def SegmentWithOrganoSegPy(images, segmentationParameters, saveSegmentationParam
             cv.imwrite(str(segmentedExportPath / imagePaths[count].name), imgAnalysis)
 
     return segmentedImages
-
-
 
 
 def Test_SegmentWithOrganoSegPy():

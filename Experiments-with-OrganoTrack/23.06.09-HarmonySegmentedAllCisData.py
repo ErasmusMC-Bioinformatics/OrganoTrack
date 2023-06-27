@@ -1,15 +1,19 @@
 from OrganoTrack.OrganoTrack import RunOrganoTrack
 from pathlib import Path
 import os
+from datetime import datetime
+
+dateTimeNow = datetime.now()
+print(dateTimeNow)
 
 # Import
-dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/import')
+dataPath = Path('/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/import')
 identifiers = {'row': 'R',
                'column': 'C',
                'field': 'F',
                'position': 'P',
                'timePoint': 'T'}
-exportPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/export')
+exportPath = Path('/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/export')
 
 # Segmentation
 segment = False
@@ -17,7 +21,7 @@ extraBlur = False
 blurSize = 3
 segParams = [0.5, 250, 150, extraBlur, 3]
 saveSegParams = [False, exportPath]
-segmentedPaths = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/export/segmented')
+segmentedPaths = exportPath / 'segmented'
 
 # Selection of organoids
 filterBoundary = True
