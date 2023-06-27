@@ -40,6 +40,3 @@ plt.rcParams.update({'font.size': 15})
 # fig3.show()
 
 print('ploting')
-
-
-print('h')

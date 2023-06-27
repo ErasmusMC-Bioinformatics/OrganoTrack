@@ -56,6 +56,3 @@ def AnalyzeAndExport(images: np.ndarray, path: Path):
 
 if __name__ == '__main__':
     print(CalculateRoundness(43185, 1252.35))
-
-    # display('OrganoTrack', image, 0.25)
-    # cv.waitKey(0)

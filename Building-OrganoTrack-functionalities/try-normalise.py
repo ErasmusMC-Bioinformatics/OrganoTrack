@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
-from stitch import read_images, stitch
-from functions import display
+from stitch import read_images
+from toDelete.functions import display
 
 # reading image
 dir = '/home/franz/Documents/mep/data/organoid-images/drug-screen-april-05/r2c2t0-all-fields'

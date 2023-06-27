@@ -2,7 +2,6 @@ import cv2 as cv
 import os
 import pandas as pd
 from pathlib import Path
-# needed to install xlrd
 from scipy import stats
 import re
 

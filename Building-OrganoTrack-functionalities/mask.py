@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from functions import rescale, display
+from toDelete.functions import display
 
 
 def mask(original, binary):

@@ -7,7 +7,7 @@
 import cv2 as cv
 import numpy as np
 from stitch import read_images, stitch
-from functions import display, plotHistogram
+from toDelete.functions import display, plotHistogram
 
 
 def normalise(img_set, wells, positions, channels, fields, norm_method):

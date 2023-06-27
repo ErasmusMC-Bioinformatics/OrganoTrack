@@ -1,7 +1,7 @@
 import cv2 as cv
 from stitch import read_images, stitch
 from normalise import normalise
-from functions import plotHistogram, display
+from toDelete.functions import plotHistogram, display
 import numpy as np
 
 if __name__ == '__main__':

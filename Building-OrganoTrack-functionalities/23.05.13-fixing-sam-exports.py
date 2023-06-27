@@ -23,5 +23,3 @@ for i, image in enumerate(inputImages):
     fixed = image.astype(np.uint8)
     _, fixed = cv.threshold(fixed, 0, 255, cv.THRESH_BINARY)  # anything more than 0 becomes full
     cv.imwrite(str(exportDir / inputImagesPaths[i].name), fixed)
-
-

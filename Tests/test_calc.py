@@ -1,5 +1,6 @@
 import unittest
-import calc
+from Tests import calc
+
 
 # Test cases
 

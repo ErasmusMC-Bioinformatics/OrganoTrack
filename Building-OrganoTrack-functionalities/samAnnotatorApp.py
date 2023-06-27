@@ -9,7 +9,7 @@ import base64
 from io import BytesIO
 
 
-model_checkpoints = {'vit_b': '/home/franz/OrganoTrack/Experimental-building-of-functionalities/sam_vit_b_01ec64.pth'}
+model_checkpoints = {'vit_b': '/home/franz/OrganoTrack/Building-OrganoTrack-functionalities/sam_vit_b_01ec64.pth'}
 
 st.set_page_config(
     page_title="SAM Annotator",

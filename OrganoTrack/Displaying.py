@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-
+import matplotlib.pyplot as plt
 
 def Rescale(frame, scale=0.5):
     width = int(frame.shape[1] * scale)
@@ -9,54 +9,29 @@ def Rescale(frame, scale=0.5):
 
     return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
 
-def Display(title, img, sf=1):
-    '''
-    :param title: title of image display
-    :param img: image to display
-    :param sf: scaling factor, 0 to 1
-    '''
-    img = Rescale(img, sf)
-    cv.imshow(title, img)
+def Display(window_title, image, scaling_factor=1):
+    image = Rescale(image, scaling_factor)
+    cv.imshow(window_title, image)
 
 
-def DisplayImages(collectiveTitle, imageSet, displayScale):
-    '''
-    :param collectiveTitle: title descriving the imageSet
-    :param imageSet: a list of images
-    :param displayScale: scaling factor, 0 to 1
-    '''
-    for i in range(len(imageSet)):
-        Display(collectiveTitle + ' ' + str(i), imageSet[i], displayScale)
+def DisplayImages(collective_title_for_image_set, image_set, scaling_factor):
+    for i in range(len(image_set)):
+        Display(collective_title_for_image_set + ' ' + str(i), image_set[i], scaling_factor)
 
 
-def ConvertLabelledImageToBinary(labelledImage):
-    '''
-    :param labelledImage: skimage-labeled image
-    :return: a binary imaeg suitable for OpenCV displaying
-    '''
-    binaryImage = labelledImage.astype(np.uint8)
+def ConvertLabelledImageToBinary(skimage_labelled_img):
+    binaryImage = skimage_labelled_img.astype(np.uint8)
     binaryImage[binaryImage != 0] = 255
     return binaryImage
 
 
 def Mask(original, binary):
-    '''
-    :param original: the grayscale image
-    :param binary: the binary detection
-    :return: the masked original with the binary regions
-    '''
     return cv.bitwise_and(original, original, mask=binary)
 
 
-def displayingTrackedSet(collectiveTitle, trackedSet, displayScale):
-    '''
-    :param collectiveTitle: title descriving the imageSet
-    :param trackedSet: tracked set of Images, where the tracked objects have the same label
-    :param displayScale: scaling factor, 0 to 1
-    :return:
-    '''
-    for i in range(trackedSet.shape[0]):
-        Display(collectiveTitle + ' ' + str(i), ConvertLabelledImageToBinary(trackedSet[i]), displayScale)
+def displayingTrackedSet(collective_title_for_image_set, tracked_set, scaling_factor):
+    for i in range(tracked_set.shape[0]):
+        Display(collective_title_for_image_set + ' ' + str(i), ConvertLabelledImageToBinary(tracked_set[i]), scaling_factor)
 
 def ExportImageWithContours(ori, pred): #, imagePath, exportPath):
 
@@ -74,6 +49,22 @@ def ExportImageWithContours(ori, pred): #, imagePath, exportPath):
 
     # Combine the images
     return cv.addWeighted(img, 1-alpha, back, alpha, 0)
+
+
+def plotHistogram(img1, label1, img2, label2, title):
+    gray_hist_1 = cv.calcHist([img1], [0], None, [256], [0, 256])
+    gray_hist_2 = cv.calcHist([img2], [0], None, [256], [0, 256])
+    # list of images, channel, mask, bins, range
+    plt.figure()
+    plt.title(title)
+    plt.xlabel('Bins')
+    plt.ylabel('# of pixels')
+    plt.plot(gray_hist_1, label=label1)
+    plt.plot(gray_hist_2, label=label2)
+    plt.xlim([0, 256])
+    plt.ylim([0, 300000])
+    plt.legend()
+    plt.show()
 
 if __name__ == '__main__':
 

@@ -1,3 +1,6 @@
+# This contains code use for plotting
+# This code could form the backbone of the plotting functionality of Track
+
 import matplotlib.pyplot as plt
 
 

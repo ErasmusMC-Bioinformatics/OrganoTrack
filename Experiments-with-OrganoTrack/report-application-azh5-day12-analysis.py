@@ -2,18 +2,15 @@ import matplotlib.ticker
 
 from OrganoTrack.Importing import ReadImages
 from OrganoTrack.Detecting import SegmentWithOrganoSegPy
-from OrganoTrack.Displaying import Display, ExportImageWithContours, DisplayImages
+from OrganoTrack.Displaying import ExportImageWithContours
 from OrganoTrack.Filtering import RemoveBoundaryObjects, FilterByFeature
 import matplotlib.pyplot as plt
-from ComparingSegmentationAccuracies import barplot_annotate_brackets
 import numpy as np
 import cv2 as cv
 from pathlib import Path
 import os
 import math
 import pandas as pd
-from statistics import stdev
-from scipy.stats import f_oneway
 
 # Directories
 imagesDir = Path('/home/franz/Documents/mep/report/results/application-tosedostat/input')

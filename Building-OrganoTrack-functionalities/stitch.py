@@ -5,9 +5,7 @@ Stitch
 
 import numpy as np
 import cv2 as cv
-import glob
 import os
-from functions import rescale, display
 
 
 def readImages(dataDir):  #, wells, positions, channels, timePoints, fields):

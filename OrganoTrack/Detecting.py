@@ -78,7 +78,7 @@ def CallAdaptiveThreshold(image, imgDataType, fudgeFactor, maxWindowSize):
         adaptiveIter = AdaptiveThreshold(image, windowSize, fudgeFactor, imgDataType)
         adaptiveSum = np.add(adaptiveSum, adaptiveIter)
         if windowSize in [20, 100, 250] and displayStep:
-           Display(str(windowSize), adaptiveIter, displayScale)
+            Display(str(windowSize), adaptiveIter, displayScale)
     return adaptiveSum
 
 
