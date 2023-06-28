@@ -1,4 +1,4 @@
-from OrganoTrack.OrganoTrack import RunOrganoTrack
+from OrganoTrack.OrganoTrack import run_OrganoTrack
 from pathlib import Path
 import os
 from datetime import datetime
@@ -43,13 +43,8 @@ def testing_OrganoTrack_full():
     loadExportedData = True
     exportedDataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
 
-
-    RunOrganoTrack(dataPath, identifiers, exportPath,
-                   segment, segParams, saveSegParams, segmentedPaths,
-                   filterBoundary, filterOrganoids, filterBy,
-                   trackOrgs, timePoints, overlayTracking,
-                   exportOrgMeasures, numberOfWellFields, morphPropertiesToMeasure,
-                   handlePlotting, loadExportedData, exportedDataPath)
+    run_OrganoTrack(dataPath, identifiers, exportPath, segment, segParams, saveSegParams, segmentedPaths,
+                    filterBoundary, filterOrganoids, filterBy, trackOrgs, timePoints, overlayTracking)
 
 
 def creating_all_image_export():
@@ -88,12 +83,8 @@ def creating_all_image_export():
     exportedDataPath = Path(
         '/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
 
-    RunOrganoTrack(dataPath, exportPath, checkResults,
-                   saveSegmentations, segment, segmentedPaths,
-                   filterOrganoids, filterBy,
-                   trackOrgs, timePoints, overlayTracking,
-                   exportOrgMeasures, numFields, morphPropertiesToMeasure,
-                   handlePlotting, loadExportedData, exportedDataPath)
+    run_OrganoTrack(dataPath, exportPath, checkResults, saveSegmentations, segment, segmentedPaths, filterOrganoids,
+                    filterBy, trackOrgs, timePoints, overlayTracking, exportOrgMeasures, numFields)
 
 def cleaning_OrganoTrack():
     experimentPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full')
@@ -104,60 +95,45 @@ def cleaning_OrganoTrack():
                    'position': 'p',
                    'timePoint': 'sk'}
 
-    RunOrganoTrack(experimentPath, identifiers, automateExecution)
+    run_OrganoTrack(experimentPath, identifiers, automateExecution)
 
 
 def harmony_segmented_all_cis_data():
-    dateTimeNow = datetime.now()
-    print(dateTimeNow)
-
     # Import
-    dataPath = Path(
+    import_path = Path(
         '/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/import')
     identifiers = {'row': 'R',
                    'column': 'C',
                    'field': 'F',
                    'position': 'P',
                    'timePoint': 'T'}
-    exportPath = Path(
+    export_path = Path(
         '/home/franz/Documents/mep/data/experiments/220405-Cis-drug-screen/Harmony-masks-with-analysis-220318-106TP24-15BME-CisGemCarbo-v4/export')
 
     # Segmentation
     segment = False
-    extraBlur = False
-    blurSize = 3
-    segParams = [0.5, 250, 150, extraBlur, 3]
-    saveSegParams = [False, exportPath]
-    segmentedPaths = exportPath / 'segmented'
+    extra_blur = False
+    blur_size = 3
+    seg_parameters = [0.5, 250, 150, extra_blur, blur_size]
+    params_to_save_segmentations = [False, export_path]
+    path_to_segmented_imgs = export_path / 'Harmony-segmented'
 
     # Selection of organoids
-    filterBoundary = True
-    filterOrganoids = True
-    filterBy = ['area', 150]  # , 'roundness', 0.5]  # minimum filter
+    remove_boundary_objects = True
+    filter_organoids_by_morphology = True
+    morph_filter_criteria = ['area', 150]
 
     # Track organoids
-    trackOrgs = True
-    timePoints = 4
-    overlayTracking = False
+    track_organoids = True
 
     # Measure organoids
-    exportOrgMeasures = True
-    numberOfWellFields = 25
-    morphPropertiesToMeasure = ['area', 'roundness', 'eccentricity', 'solidity']
+    export_tracked_organoid_measurements = True
+    morph_properties_to_measure = ['area', 'roundness', 'eccentricity', 'solidity']
 
-    # Handle plots
-    handlePlotting = True
-    loadExportedData = True
-    exportedDataPath = Path(
-        '/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
-
-    RunOrganoTrack(dataPath, identifiers, exportPath,
-                   segment, segParams, saveSegParams, segmentedPaths,
-                   filterBoundary, filterOrganoids, filterBy,
-                   trackOrgs, timePoints, overlayTracking,
-                   exportOrgMeasures, numberOfWellFields, morphPropertiesToMeasure,
-                   handlePlotting, loadExportedData, exportedDataPath)
-
+    run_OrganoTrack(import_path, identifiers, export_path, segment, seg_parameters, params_to_save_segmentations,
+                    path_to_segmented_imgs, remove_boundary_objects, filter_organoids_by_morphology,
+                    morph_filter_criteria, track_organoids, export_tracked_organoid_measurements,
+                    morph_properties_to_measure)
 
 def running_all_images():
     # All Masks
@@ -198,13 +174,9 @@ def running_all_images():
     exportedDataPath = Path(
         '/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/output/trackedMeasures.xlsx')
 
-    RunOrganoTrack(dataPath, exportPath, checkResults,
-                   segment, segParams, saveSegParams, segmentedPaths,
-                   filterBoundary, filterOrganoids, filterBy,
-                   trackOrgs, timePoints, overlayTracking,
-                   exportOrgMeasures, numberOfWellFields, morphPropertiesToMeasure,
-                   handlePlotting, loadExportedData, exportedDataPath)
+    run_OrganoTrack(dataPath, exportPath, checkResults, segment, segParams, saveSegParams, segmentedPaths,
+                    filterBoundary, filterOrganoids, filterBy, trackOrgs, timePoints, overlayTracking)
 
 
 if __name__ == '__main__':
-    testing_OrganoTrack_full()
+    harmony_segmented_all_cis_data()

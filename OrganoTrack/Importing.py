@@ -6,7 +6,7 @@ from scipy import stats
 import re
 
 
-def ReadPlateLayout(inputDataPath: Path):
+def load_plate_layout(inputDataPath: Path):
     '''
     :param plateLayoutDir: directory of plate layout file (.xlsx, .csv, or .tsv). The file must (!) follow directives.
     :return: A List of Lists, with elements as tuples (condition, concentration, concentration unit)
@@ -65,7 +65,7 @@ def Test_ReadPlateLayout():
     plateDirCSV = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/buildingPipeline_Input/plate_layout.csv'
 
     plateDirTSV = '/home/franz/Documents/mep/data/for-creating-OrganoTrack/buildingPipeline_Input/plate_layout.tsv'
-    ReadPlateLayout(dataPath)
+    load_plate_layout(dataPath)
 
 def GetIdentifierValue(imageName, identifier):
     pattern = r"{0}(\d+)".format(identifier)
@@ -129,49 +129,6 @@ def Test_ReadImagesWithHarmonyExport():
                    'position': 'P',
                    'timePoint': 'T'}
     images, imagesPaths = ReadImages(dataPath, identifiers)
-    print('s')
-
-def ReadImages2(inputDataPath):
-    '''
-    Read Images requires that the images are within a folder called '/images', that inputDataPath is the parent folder
-    of '/images', and that '/images' is teh first item in a list of files in the parent folder (hence line 77 calls
-    for the first element)
-    '''
-    print("\nReading data...")
-    images = dict()
-    imageCount = 0
-    imagesFolderName = sorted(os.listdir(inputDataPath))[0]  # the first element should be the 'images' folder
-    imagesFolderDir = inputDataPath / imagesFolderName
-
-    # > Get the names and extensions of the image files in the directory
-    inputImagesNames = sorted(os.listdir(imagesFolderDir))
-
-    # > Create directory paths for each image file
-    inputImagesPaths = [imagesFolderDir / imageName for imageName in inputImagesNames]
-
-    # > Read images
-    for imagePath in inputImagesPaths:
-        images[imagePath.stem] = cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE)
-        imageCount+=1
-        print(f'Images read: {imageCount}')
-
-    print("Finished reading data.")
-
-    print("There is/are in total " + str(len(images)) + " image(s).")
-
-    return images, inputImagesPaths
-
-
-def ReadImage(imagePath):
-    return cv.imread(str(imagePath), cv.IMREAD_GRAYSCALE)
-
-
-def Test_ReadImage():
-    dataPath = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/Cis-drug-screen-subset-of-Images_control-and-cis-field-1-all-times/r02c02f01p01-ch1sk1fk1fl1.tiff')
-    inputImage = ReadImage(dataPath)
-    m = stats.mode(inputImage)
-    print(m[0])
-    print('test')
 
 
 def UpdatePlateLayoutWithImageNames(plateLayout, inputImagesPaths):
