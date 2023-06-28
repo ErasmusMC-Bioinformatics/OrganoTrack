@@ -1,22 +1,16 @@
-from OrganoTrack.Importing import ReadImages, load_plate_layout, UpdatePlateLayoutWithImageNames
+from OrganoTrack.Importing import ReadImages, load_plate_layout
 from OrganoTrack.Detecting import SegmentWithOrganoSegPy
-from OrganoTrack.Exporting import SaveData, MeasureAndExport, ExportSingleImageMeasurements
+from OrganoTrack.Exporting import MeasureAndExport
 from OrganoTrack.Filtering import FilterByFeature, RemoveBoundaryObjects
-from OrganoTrack.Displaying import DisplayImages, Display, ConvertLabelledImageToBinary, displayingTrackedSet, ExportImageWithContours, Mask
-from OrganoTrack.Tracking import track, SaveImages, MakeDirectory, stack, LabelAndStack, Label, UpdateTrackedStack
 
-# temporary imports
-import cv2 as cv
-from pathlib import Path
-from PIL import Image
-from datetime import datetime
+from OrganoTrack.Tracking import track, SaveImages, MakeDirectory, stack
 from OrganoTrack.ImageHandling import DrawRegionsOnImages
+from OrganoTrack.Displaying import Mask
+from pathlib import Path
 import numpy as np
-import pandas as pd
-import skimage.measure
-import matplotlib.pyplot as plt
-import time
-from itertools import chain
+from PIL import Image
+
+
 
 
 def load_segmentations(segmentOrgs, importPath, identifiers, segParams, saveSegParams, segmentedImagesPath):
@@ -57,7 +51,7 @@ def filter_organoids_by_morphology(filter_criteria, images_in_analysis):
     return images_in_analysis
 
 
-def track_organoids_across_timelapse(images_in_analysis):
+def track_orgs(images_in_analysis):
 
     for well, wellFieldImages in images_in_analysis.items():
         highestTrackIDnum = 0
@@ -75,7 +69,7 @@ def track_organoids_across_timelapse(images_in_analysis):
             images_in_analysis[well][field] = trackedTimeLapseSet2
     return images_in_analysis
 
-def export_organoid_measurements(exportPath, morphPropsToMeasure, images_in_analysis, plate_layout):
+def export_org_measurements(exportPath, morphPropsToMeasure, images_in_analysis, plate_layout):
     measuresFileName = 'trackedMeasures.xlsx'
     trackedMeasurementsPerWell = MeasureAndExport(exportPath / measuresFileName, morphPropsToMeasure,
                                                   images_in_analysis, plate_layout)
@@ -118,7 +112,7 @@ def run_OrganoTrack(import_path: Path, identifiers: dict, export_path: Path,
                     segment_organoids: bool, seg_parameters: list, params_to_save_segs: list, path_to_seg_imgs: Path,
                     remove_boundary_objects: bool, filter_by_morphology: bool, filter_criteria: list,
                     track_organoids: bool,
-                    export_org_measurements: bool, morph_props_to_measure: list):
+                    export_organoid_measurements: bool, morph_props_to_measure: list):
 
     images_in_analysis = load_segmentations(segment_organoids, import_path, identifiers, seg_parameters, params_to_save_segs, path_to_seg_imgs)
     plate_layout = load_plate_layout(import_path)
@@ -130,10 +124,10 @@ def run_OrganoTrack(import_path: Path, identifiers: dict, export_path: Path,
         images_in_analysis = filter_organoids_by_morphology(filter_criteria, images_in_analysis)
 
     if track_organoids:
-        images_in_analysis = track_organoids_across_timelapse(images_in_analysis)
+        images_in_analysis = track_orgs(images_in_analysis)
 
-    if export_org_measurements:
-        tracked_measurements_per_well = export_organoid_measurements(export_path, morph_props_to_measure, images_in_analysis, plate_layout)
+    if export_organoid_measurements:
+        tracked_org_measurements_per_well = export_org_measurements(export_path, morph_props_to_measure, images_in_analysis, plate_layout)
 
 
 if __name__ == '__main__':

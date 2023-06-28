@@ -18,14 +18,14 @@ def load_plate_layout(inputDataPath: Path):
 
     extension = plateLayoutDir.suffix
 
-    if extension == '.xlsx':
-        plateLayoutInput = pd.read_excel(plateLayoutDir, header=None)
-
-    elif extension == '.csv':
+    if extension == '.csv':
         plateLayoutInput = pd.read_csv(plateLayoutDir, header=None)
 
     elif extension == '.tsv':
         plateLayoutInput = pd.read_csv(plateLayoutDir, header=None, delimiter='\t')
+
+    else:
+        plateLayoutInput = pd.read_excel(plateLayoutDir, header=None)
 
     # > Get the index (row) number where 'conditions' is
     conditionsLoc = plateLayoutInput.index[plateLayoutInput[0] == 'conditions'].tolist()[0]
@@ -95,7 +95,7 @@ def ReadImages(importPath: Path, identifiers: dict):
         identifierValues = GetIdentifierInfo(imageName, identifiers)
         row, column, field, position, timePoint = identifierValues['row'], identifierValues['column'], \
                                                   identifierValues['field'], identifierValues['position'], \
-                                                  identifierValues['timePoint']
+                                                  identifierValues['time_point']
         well = (row, column)
         if well not in imagesByWellsFieldsAndTimepoints:
             print(f'Reading well {well}...')
@@ -117,7 +117,7 @@ def Test_ReadImages():
                    'column': 'c',
                    'field': 'f',
                    'position': 'p',
-                   'timePoint': 'sk'}
+                   'time_point': 'sk'}
     images, imagesPaths = ReadImages(dataPath, identifiers)
     print('s')
 
@@ -127,7 +127,7 @@ def Test_ReadImagesWithHarmonyExport():
                    'column': 'C',
                    'field': 'F',
                    'position': 'P',
-                   'timePoint': 'T'}
+                   'time_point': 'T'}
     images, imagesPaths = ReadImages(dataPath, identifiers)
 
 

@@ -1,12 +1,23 @@
 # OrganoTrack: A developing platform for preclinical chemotherapy response prediction based on drug-induced morphological changes of tumour organoids derived from muscle-invasive bladder cancer patients
 
+## Structuring experiment folder
+One directory should be dedicated per experiment.
+Within this directory, there should be two directories called 'import' and 'export'.
 
+Within the import sub-directory, there should be two items.
+One item is another sub-directory called 'images', wherein all the experimental images lie.
+The second item is the plate_layout file. Supported formats include .csv, .tsv, .xls, .xlsx, .xlsm, .xlsb, .odf, .ods, and .odt.
+
+Within the export sub-directory, files exported through the analysis of OrganoTrack should exist.
+It is thus empty for a new experiment.
+
+## Executing OrganoTrack
+First, the images and plate layout of the experiment should be stored within a directory as described above in 'Structuring experiment folder'.
+OrganoTrack can be executed from a Python script.
+For a template script, see function template() in executingOrganoTrack.py (within Experiments-with-OrganoTrack).
 
 
 Input data requirements:
-
-- Input images should be within a folder called images, within a parent folder. The directory of this parent folder should be given, and 'images' folder should be the first element in a list of items/directories in the parent folder
-
 - Images should be named iteratively, starting with information for the well, well area, and finally time point.
 - For example, images exported from the Opera Phenix Plus are named "r02c02f01p01-ch1sk1fk1fl1.tiff"
 - This image corresponds to, of a 96-well plate, row 2, column 2, field 1, position 1 within z-stack, channel 1, time point (sk) 1. The rest is not yet understood.
