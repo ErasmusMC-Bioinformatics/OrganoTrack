@@ -80,13 +80,13 @@ def harmony_segmented_all_cis_data():
 
 def organotrack_test():
     # Import
-    import_path = Path(' ')  # enter absolute path
-    identifiers = {'row': 'r',  # character identifier in the image name for well row
-                   'column': 'c',
-                   'field': 'f',
-                   'position': 'p',
-                   'time_point': 'sk'}
-    export_path = Path(' ')  # enter absolute path
+    import_path = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/import')  # enter absolute path
+    identifiers = {'row': 'R',  # character identifier in the image name for well row
+                   'column': 'C',
+                   'field': 'F',
+                   'position': 'P',
+                   'time_point': 'T'}
+    export_path = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/export')  # enter absolute path
 
     # Segmentation
     segment = False
@@ -98,7 +98,7 @@ def organotrack_test():
     seg_parameters = [intensity_threshold, max_window_size, size_threshold_px, extra_blur, blur_size]
     export_segmentation = False
     params_to_save_segmentations = [export_segmentation, export_path]
-    path_to_segmented_imgs = export_path / 'Harmony-segmented'
+    path_to_segmented_imgs = export_path / 'segmented'
 
     # Selection of organoids
     remove_boundary_objects = True
@@ -120,4 +120,4 @@ def organotrack_test():
 
 
 if __name__ == '__main__':
-    harmony_segmented_all_cis_data()
+    organotrack_test()

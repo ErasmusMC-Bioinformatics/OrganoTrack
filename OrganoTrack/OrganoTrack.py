@@ -128,6 +128,7 @@ def run_OrganoTrack(import_path: Path, identifiers: dict, export_path: Path,
 
     if export_organoid_measurements:
         tracked_org_measurements_per_well = export_org_measurements(export_path, morph_props_to_measure, images_in_analysis, plate_layout)
+        print('g')
 
 
 if __name__ == '__main__':

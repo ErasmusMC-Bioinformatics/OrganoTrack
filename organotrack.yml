@@ -6,7 +6,7 @@ dependencies:
   - python=3.9
   - imageio
   - matplotlib
-  - numpy
+  - numpy=1.24.3
   - opencv
   - openpyxl
   - pandas
