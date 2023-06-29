@@ -3,26 +3,30 @@ from pathlib import Path
 
 def template():
     # Import
-    import_path = Path('absolute_path_to_the_import_sub_directory')
-    identifiers = {'row': 'image_name_row_identifier_character_e.g._r',
-                   'column': 'image_name_column_identifier_character_e.g._c',
-                   'field': 'image_name_field_identifier_character_e.g._f',
-                   'position': 'image_name_position_identifier_character_e.g._p',
-                   'time_point': 'image_name_time_point_identifier_character_e.g._sk'}
-    export_path = Path('absolute_path_to_the_export_sub_directory')
+    import_path = Path(' ')  # enter absolute path
+    identifiers = {'row': 'r',  # character identifier in the image name for well row
+                   'column': 'c',
+                   'field': 'f',
+                   'position': 'p',
+                   'time_point': 'sk'}
+    export_path = Path(' ')  # enter absolute path
 
     # Segmentation
-    segment = False  # True if want to employ OrganoSegPy to segment. False otherwise
-    extra_blur = False  # True if want to include an additional blurring step in OrganoSegPy. False otherwise
-    blur_size = 3  # For the extra blurring step, define size of structuring element
-    seg_parameters = [0.5, 250, 150, extra_blur, blur_size]  #
-    params_to_save_segmentations = [False, export_path]
+    segment = False
+    intensity_threshold = 0.5  # multiplication factor of Otsu threshold within adaptive thresholding
+    max_window_size = 250  # maximum window size considered for adaptive thresholding
+    size_threshold_px = 150  # threshold for object sizes, below which they are removed
+    extra_blur = False
+    blur_size = 3  # For the extra blurring step, size of structuring element
+    seg_parameters = [intensity_threshold, max_window_size, size_threshold_px, extra_blur, blur_size]
+    export_segmentation = False
+    params_to_save_segmentations = [export_segmentation, export_path]
     path_to_segmented_imgs = export_path / 'Harmony-segmented'
 
     # Selection of organoids
     remove_boundary_objects = True
     filter_organoids_by_morphology = True
-    morph_filter_criteria = ['area', 150]
+    morph_filter_criteria = ['area', 150]  # list of morph measure to filter by, with min threshold as the next element
 
     # Track organoids
     track_organoids = True
@@ -31,10 +35,11 @@ def template():
     export_tracked_organoid_measurements = True
     morph_properties_to_measure = ['area', 'roundness', 'eccentricity', 'solidity']
 
-    run_OrganoTrack(import_path, identifiers, export_path, segment, seg_parameters, params_to_save_segmentations,
-                    path_to_segmented_imgs, remove_boundary_objects, filter_organoids_by_morphology,
-                    morph_filter_criteria, track_organoids, export_tracked_organoid_measurements,
-                    morph_properties_to_measure)
+    run_OrganoTrack(import_path, identifiers, export_path,
+                    segment, seg_parameters, params_to_save_segmentations, path_to_segmented_imgs,
+                    remove_boundary_objects, filter_organoids_by_morphology, morph_filter_criteria,
+                    track_organoids,
+                    export_tracked_organoid_measurements, morph_properties_to_measure)
 
 def harmony_segmented_all_cis_data():
     # Import
@@ -72,6 +77,46 @@ def harmony_segmented_all_cis_data():
                     path_to_segmented_imgs, remove_boundary_objects, filter_organoids_by_morphology,
                     morph_filter_criteria, track_organoids, export_tracked_organoid_measurements,
                     morph_properties_to_measure)
+
+def organotrack_test():
+    # Import
+    import_path = Path(' ')  # enter absolute path
+    identifiers = {'row': 'r',  # character identifier in the image name for well row
+                   'column': 'c',
+                   'field': 'f',
+                   'position': 'p',
+                   'time_point': 'sk'}
+    export_path = Path(' ')  # enter absolute path
+
+    # Segmentation
+    segment = False
+    intensity_threshold = 0.5  # multiplication factor of Otsu threshold within adaptive thresholding
+    max_window_size = 250  # maximum window size considered for adaptive thresholding
+    size_threshold_px = 150  # threshold for object sizes, below which they are removed
+    extra_blur = False
+    blur_size = 3  # For the extra blurring step, size of structuring element
+    seg_parameters = [intensity_threshold, max_window_size, size_threshold_px, extra_blur, blur_size]
+    export_segmentation = False
+    params_to_save_segmentations = [export_segmentation, export_path]
+    path_to_segmented_imgs = export_path / 'Harmony-segmented'
+
+    # Selection of organoids
+    remove_boundary_objects = True
+    filter_organoids_by_morphology = True
+    morph_filter_criteria = ['area', 150]  # list of morph measure to filter by, with min threshold as the next element
+
+    # Track organoids
+    track_organoids = True
+
+    # Measure organoids
+    export_tracked_organoid_measurements = True
+    morph_properties_to_measure = ['area', 'roundness', 'eccentricity', 'solidity']
+
+    run_OrganoTrack(import_path, identifiers, export_path,
+                    segment, seg_parameters, params_to_save_segmentations, path_to_segmented_imgs,
+                    remove_boundary_objects, filter_organoids_by_morphology, morph_filter_criteria,
+                    track_organoids,
+                    export_tracked_organoid_measurements, morph_properties_to_measure)
 
 
 if __name__ == '__main__':

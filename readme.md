@@ -21,6 +21,10 @@ OrganoTrack can be executed from a Python script.
 For a template script, see function template() in executingOrganoTrack.py (within Experiments-with-OrganoTrack).
 
 
+## Exported data
+Currently, the export of measurements works only if organoids were tracked.
+Otherwise, measurements will be exported per single image.
+
 Input data requirements:
 - Images should be named iteratively, starting with information for the well, well area, and finally time point.
 - For example, images exported from the Opera Phenix Plus are named "r02c02f01p01-ch1sk1fk1fl1.tiff"
