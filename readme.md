@@ -1,5 +1,9 @@
 # OrganoTrack: A developing platform for preclinical chemotherapy response prediction based on drug-induced morphological changes of tumour organoids derived from muscle-invasive bladder cancer patients
 
+## Installing OrganoTrack
+Create an environment by installing from the organotrack.yml file.
+Use conda or mamba, and execute: conda env create -f organotrack.yml
+
 ## Structuring experiment folder
 One directory should be dedicated per experiment.
 Within this directory, there should be two directories called 'import' and 'export'.
