@@ -6,8 +6,7 @@ These organoids, derived from patient tumours, were cultured with varying drug c
 Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made.
 
 Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate lyaout.
-The output of OrganoTrack is a spreadsheet with tables for each well, and sheets for each measurement.
-Each table has the measurements of single organoids at each time point.
+The output of OrganoTrack is a spreadsheet with morphological measurements for each organoid over time.
 
 ## Installation
 
@@ -34,7 +33,8 @@ Overview: to set up OrganoTrack source dependencies, create an empty Conda envir
 ## Usage
 
 To use OrganoTrack, a specific folder structure for the experiment needs to be made, 
-and OrganoTrack needs to be executed from a Python IDE.  
+and OrganoTrack needs to be executed from a Python IDE.
+The export of OrganoTrack can then be interpreted.
 
 For a trial execution of OrganoTrack, some experiment data is provided in experiment-cisplatin-drug-screen.
 
@@ -65,18 +65,16 @@ After the organotrack environment is loaded, follow these instructions for a bas
 2) Copy the template() function, paste it on the same python script. Rename the copy to your desired name, e.g. cisplatin_drug_screen.
 3) Within your function copy, define the following variables:
    - import_path: the absolute path of the experiment import directory (on Windows, ensure that '/' is used within the path.)
-   - identifiers: 
-   - 
+   - identifiers: enter the characters that, within the image name, identify the row, column, field, position, and time point of the image
+   - export_path: the absolute path of the experiment export directory (on Windows, ensure that '/' is used within the path.)
+4) Call this function under main, and execute the Python script.
 
-For a template script, see function template() in executingOrganoTrack.py (within Experiments-with-OrganoTrack).
+### Interpreting results from OrganoTrack execution
 
-
-
-## Exported data
-Currently, the export of measurements works only if organoids were tracked.
-Otherwise, measurements will be exported per single image.
-
-Input data requirements:
+The experiment export directory will be updated with a trackedMeasures.xlxs file.
+This file will contain a number of sheets, each for a specific morphological measure.
+Within each sheet, there will be a table for each well.
+Each table contains the measure of each organoid at each time point that it is found.
 
 
 

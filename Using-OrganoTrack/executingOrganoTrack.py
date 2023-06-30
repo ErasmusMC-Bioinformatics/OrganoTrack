@@ -86,7 +86,7 @@ def cisplatin_drug_screen():
                    'field': 'F',
                    'position': 'P',
                    'time_point': 'T'}
-    export_path = Path(' ')  # enter absolute path
+    export_path = Path('C:/Users/franz/Documents/mep/OrganoTrack/experiment-cisplatin-drug-screen/export')  # enter absolute path
 
     # Segmentation
     segment = False
@@ -120,4 +120,4 @@ def cisplatin_drug_screen():
 
 
 if __name__ == '__main__':
-    organotrack_test()
+    cisplatin_drug_screen()
