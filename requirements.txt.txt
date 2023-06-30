@@ -1,0 +1,15 @@
+imageio
+matplotlib
+numpy
+opencv-python
+openpyxl
+pandas
+pillow
+scikit-image
+scipy
+streamlit
+tifffile
+odfpy
+plotly
+pyxlsb
+xlrd

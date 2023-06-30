@@ -1,6 +1,6 @@
-# OrganoTrack: A developing platform for measuring morphological changes of single organoids across time lapse brightfield imaging, well plate based experiments
+# OrganoTrack: A developing platform for producing dose response curves from measuring temporal organoid morphology
 
-## Purpose of OrganoTrack
+## Purpose
 OrganoTrack was created to measure the morphology of single organoids, from brightfield images, over time.
 These organoids, derived from patient tumours, were cultured with varying drug concentrations and imaged with a brightfield microscope over time.
 Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made.
@@ -8,16 +8,29 @@ Therefore, OrganoTrack receives well-plate-based brightfield images and the cond
 The output of OrganoTrack is a spreadsheet with tables for each well, and sheets for each measurement.
 Each table has the measurements of single organoids at each time point.
 
-## Installing OrganoTrack
-Create an environment by installing from the organotrack.yml file.
-Use conda or mamba, and execute: conda env create -f organotrack.yml
+## Installation
+
+Overview: to set up OrganoTrack source dependencies, create an empty Conda environment and install all packages listed in requirements.txt.
+
+1) Install Anaconda (https://www.anaconda.com/products/distribution)
+2) Open the Anaconda prompt and create a new environment
+   ```
+   >> conda create -n organotrack python=3.9
+   >> conda activate organotrack
+   ```
+3) Download OrganoTrack and extract it to a directory of your choosing. You may also clone the repository instead.
+4) In the Anaconda prompt, navigate to the OrganoTrack root directory (which contains the readme.md file)
 
    ```
-   >> conda create -n OrganoID python=3.9
-   >> activate OrganoID
+   >> cd path/to/OrganoTrack/directory
    ```
 
-## Structuring experiment folder
+5) Install all OrganoTrack requirements:
+   ```
+   >> pip install -r requirements.txt
+   ```
+
+## Usage
 One directory should be dedicated per experiment.
 Within this directory, there should be two directories called 'import' and 'export'.
 

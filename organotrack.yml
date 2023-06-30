@@ -16,7 +16,6 @@ dependencies:
   - scipy
   - streamlit
   - tifffile
-  - time
   - pip:
       - odfpy
       - plotly
