@@ -1,4 +1,11 @@
-# OrganoTrack: A developing platform for preclinical chemotherapy response prediction based on drug-induced morphological changes of tumour organoids derived from muscle-invasive bladder cancer patients
+# OrganoTrack: A developing platform for measuring morphological changes of single organoids across time lapse brightfield imaging, well plate based experiments
+
+## Purpose of OrganoTrack
+OrganoTrack was created to measure the morphology of single organoids, from brightfield images, over time. These organoids, derived from patient tumours, were cultured with varying drug concentrations and imaged with a brightfield microscope over time. Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made. Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate lyaout. The output of OrganoTrack is a spreadsheet of single 
+
+## Capabilities of OrganoTrack
+OrganoTrack takes brightfiel
+With OrganoTrack, you can make morphological measurements on objects tracked across brightfield timelapse images. For example, you can measure the area of an object over time.
 
 ## Installing OrganoTrack
 Create an environment by installing from the organotrack.yml file.
