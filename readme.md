@@ -4,6 +4,7 @@
 OrganoTrack was created to measure the morphology of single organoids, from brightfield images, over time.
 These organoids, derived from patient tumours, were cultured with varying drug concentrations and imaged with a brightfield microscope over time.
 Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made.
+
 Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate lyaout.
 The output of OrganoTrack is a spreadsheet with tables for each well, and sheets for each measurement.
 Each table has the measurements of single organoids at each time point.
@@ -31,19 +32,34 @@ Overview: to set up OrganoTrack source dependencies, create an empty Conda envir
    ```
 
 ## Usage
-One directory should be dedicated per experiment.
-Within this directory, there should be two directories called 'import' and 'export'.
 
-Within the import sub-directory, there should be two items.
-One item is another sub-directory called 'images', wherein all the experimental images lie.
-The second item is the plate_layout file. Supported formats include .csv, .tsv, .xls, .xlsx, .xlsm, .xlsb, .odf, .ods, and .odt.
+To use OrganoTrack, a specific folder structure for the experiment needs to be made, 
+and OrganoTrack needs to be executed from a Python IDE.  
 
-Within the export sub-directory, files exported through the analysis of OrganoTrack should exist.
-It is thus empty for a new experiment.
 
-## Executing OrganoTrack
-First, the images and plate layout of the experiment should be stored within a directory as described above in 'Structuring experiment folder'.
-OrganoTrack can be executed from a Python script.
+### Creating experiment folder structure
+
+1) Create an experiment directory with your desired name, e.g. cisplatin-drug-response
+2) Within this experiment directory, create two directories called 'import' and 'export'
+3) Within the import directory, there should be two items. The fist is an 'images' directory containing all the experiment images. The second item is the plate_layout file in .csv, .tsv, or any MS Excel format.
+
+**Image naming note:**
+
+The images should be named iteratively, starting with the well, the well field, z position, and imaging time point.
+For example, the name "R2C2_F10P1T0_220405-106TP24-15BME-CisGemCarbo-Harmony-mask" corresponds to
+an image captured from row (R) 2, column (C) 2, field (F) 10 of 25 well fields
+position (P) 1 and time point (T) 0. The rest of the image name contains experiment information.
+
+**Plate layout note:**
+
+Use a format for the plate layout as structured in plate_layout.xlsx.
+The plate layout has two tables, the first for the well plate conditions,
+and the second for the condition concentrations.
+
+For a trial execution of OrganoTrack, some experiment data is provided in the cisplatin-drug-screen directory.
+
+### Executing OrganoTrack from a Python IDE
+
 For a template script, see function template() in executingOrganoTrack.py (within Experiments-with-OrganoTrack).
 
 
@@ -52,7 +68,7 @@ Currently, the export of measurements works only if organoids were tracked.
 Otherwise, measurements will be exported per single image.
 
 Input data requirements:
-- Images should be named iteratively, starting with information for the well, well area, and finally time point.
+
 - For example, images exported from the Opera Phenix Plus are named "r02c02f01p01-ch1sk1fk1fl1.tiff"
 - This image corresponds to, of a 96-well plate, row 2, column 2, field 1, position 1 within z-stack, channel 1, time point (sk) 1. The rest is not yet understood.
 - The images read by OrganoTrack are stored into a nested dictionary. The first nest considers a tuple of (row, column) for each well
