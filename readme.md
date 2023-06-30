@@ -1,15 +1,19 @@
 # OrganoTrack: A developing platform for measuring morphological changes of single organoids across time lapse brightfield imaging, well plate based experiments
 
 ## Purpose of OrganoTrack
-OrganoTrack was created to measure the morphology of single organoids, from brightfield images, over time. These organoids, derived from patient tumours, were cultured with varying drug concentrations and imaged with a brightfield microscope over time. Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made. Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate lyaout. The output of OrganoTrack is a spreadsheet of single 
-
-## Capabilities of OrganoTrack
-OrganoTrack takes brightfiel
-With OrganoTrack, you can make morphological measurements on objects tracked across brightfield timelapse images. For example, you can measure the area of an object over time.
+OrganoTrack was created to measure the morphology of single organoids, from brightfield images, over time.
+These organoids, derived from patient tumours, were cultured with varying drug concentrations and imaged with a brightfield microscope over time.
+Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made.
+Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate lyaout.
+The output of OrganoTrack is a spreadsheet with tables for each well, and sheets for each measurement.
+Each table has the measurements of single organoids at each time point.
 
 ## Installing OrganoTrack
 Create an environment by installing from the organotrack.yml file.
 Use conda or mamba, and execute: conda env create -f organotrack.yml
+
+   >> conda create -n OrganoID python=3.9
+   >> activate OrganoID
 
 ## Structuring experiment folder
 One directory should be dedicated per experiment.
