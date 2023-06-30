@@ -12,8 +12,10 @@ Each table has the measurements of single organoids at each time point.
 Create an environment by installing from the organotrack.yml file.
 Use conda or mamba, and execute: conda env create -f organotrack.yml
 
+   ```
    >> conda create -n OrganoID python=3.9
    >> activate OrganoID
+   ```
 
 ## Structuring experiment folder
 One directory should be dedicated per experiment.
@@ -47,28 +49,4 @@ Input data requirements:
 - Thus, another naming format is r2c2f1sk1, r2c2f1sk2, r2c2f1sk3, r2c2f1sk4. Thus, the information is ordered by well, field, time point
 - And alphanumeric sorting should sort the images in this order.
 - Ensure that each image is unique in terms of: well, field, position, timepoint
-
-Plate layout reads uM, not μM
-
-Functionality to add: convert A2 well format to row, column format, or vice versa.
-Ensure robustness across any naming convention
-- e.g. D4 1, D4 2 (2 same well, field, timepoint, different position)
-- F4 10x: Well, 10x mag not needed for reading, but later for area calculation
-- E5 10x 1.tif, E5 10x 2.tif, E5 10x 3.tif: Same well, 10x magnification (not needed for reading), 3 different fields
-- Allow for consideration of 10x or 4x: Thus, well, magnification, field, position, timepoint
-
-Get their lazy filenaming. Find a pattern. Make reading fit that. Ultimately:
-- It's a well plate, with wells, magnifications, fields, positions, timepoints 
-
-All naming patterns I have:
-- r02c02f01p01-ch1sk1fk1fl1:                                         I know this one
-- P117T-P9-C1-10x:                                                   Extra-wellByLetter&Number-MagnificationX
-- Haga2Tp14_FotoFranz:                                               Extra. No well information
-- E10 1:                                                             wellByLetter&Number position/field (cannot change, will confuse software)
-- B4 10x. Format:                                                    wellByLetter&Number MagnificationX
-- E4 10x 3. Format:                                                  wellByLetter&Number MagnificationX field number
-- R2C2_F1P1T3_220405-106TP24-15BME-CisGemCarbo-Harmony-mask. Format: RowNumColumnNum_FieldNumPositionNumTimeNum_Extra
-
-True patterns: 
-wells, magnifications, fields, positions, timepoints (no channels currently)
 
