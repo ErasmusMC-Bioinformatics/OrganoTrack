@@ -78,15 +78,15 @@ def harmony_segmented_all_cis_data():
                     morph_filter_criteria, track_organoids, export_tracked_organoid_measurements,
                     morph_properties_to_measure)
 
-def organotrack_test():
+def cisplatin_drug_screen():
     # Import
-    import_path = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/import')  # enter absolute path
+    import_path = Path('C:/Users/franz/Documents/mep/OrganoTrack/experiment-cisplatin-drug-screen/import')  # enter absolute path
     identifiers = {'row': 'R',  # character identifier in the image name for well row
                    'column': 'C',
                    'field': 'F',
                    'position': 'P',
                    'time_point': 'T'}
-    export_path = Path('/home/franz/Documents/mep/data/for-creating-OrganoTrack/testing-OrganoTrack-full/export')  # enter absolute path
+    export_path = Path(' ')  # enter absolute path
 
     # Segmentation
     segment = False
@@ -98,7 +98,7 @@ def organotrack_test():
     seg_parameters = [intensity_threshold, max_window_size, size_threshold_px, extra_blur, blur_size]
     export_segmentation = False
     params_to_save_segmentations = [export_segmentation, export_path]
-    path_to_segmented_imgs = export_path / 'segmented'
+    path_to_segmented_imgs = export_path / 'Harmony-segmented'
 
     # Selection of organoids
     remove_boundary_objects = True
