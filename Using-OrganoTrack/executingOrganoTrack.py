@@ -93,9 +93,7 @@ def cisplatin_drug_screen():
     intensity_threshold = 0.5  # multiplication factor of Otsu threshold within adaptive thresholding
     max_window_size = 250  # maximum window size considered for adaptive thresholding
     size_threshold_px = 150  # threshold for object sizes, below which they are removed
-    extra_blur = False
-    blur_size = 3  # For the extra blurring step, size of structuring element
-    seg_parameters = [intensity_threshold, max_window_size, size_threshold_px, extra_blur, blur_size]
+    seg_parameters = [intensity_threshold, max_window_size, size_threshold_px]
     export_segmentation = False
     params_to_save_segmentations = [export_segmentation, export_path]
     path_to_segmented_imgs = export_path / 'Harmony-segmented'

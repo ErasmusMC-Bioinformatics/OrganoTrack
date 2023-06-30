@@ -190,12 +190,10 @@ def FillHoles(image):
 
 
 def SegmentWithOrganoSegPy(images: dict, segmentationParameters, saveSegmentationParameters):
-    fudgeFactor, maxWindowSize, minObjectSize, extraBlur, blurSize, displaySegStep = segmentationParameters[0], \
+    fudgeFactor, maxWindowSize, minObjectSize, displaySegStep = segmentationParameters[0], \
                                                                                      segmentationParameters[1],\
                                                                                      segmentationParameters[2],\
-                                                                                     segmentationParameters[3],\
-                                                                                     segmentationParameters[4], \
-                                                                                     segmentationParameters[5]
+                                                                                     segmentationParameters[3]
 
     saveSegmentation, exportPath, imagePaths = saveSegmentationParameters[0],\
                                                saveSegmentationParameters[1], \
@@ -226,8 +224,6 @@ def SegmentWithOrganoSegPy(images: dict, segmentationParameters, saveSegmentatio
         imgAnalysis = Smoothen(imgAnalysis)
         if displaySegStep:
             Display('2', imgAnalysis, displayScale)
-        if extraBlur:
-            imgAnalysis = cv.GaussianBlur(imgAnalysis, (blurSize, blurSize), 0)
 
         imgAnalysis = OpenAndClose(imgAnalysis, imgDataType)
         if displaySegStep:
