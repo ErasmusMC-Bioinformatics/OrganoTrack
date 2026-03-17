@@ -5,7 +5,7 @@ OrganoTrack was created to measure the morphology of single organoids, from brig
 These organoids, derived from patient tumours, were cultured with varying drug concentrations and imaged with a brightfield microscope over time.
 Having these temporal morphological measurements, dose-response plots showing the effect of increasing drug concentrations on PDTO morphology can be made.
 
-Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate lyaout.
+Therefore, OrganoTrack receives well-plate-based brightfield images and the conditions of the well plate layout.
 The output of OrganoTrack is a spreadsheet with morphological measurements for each organoid over time.
 
 ## Installation
@@ -75,9 +75,4 @@ The experiment export directory will be updated with a trackedMeasures.xlxs file
 This file will contain a number of sheets, each for a specific morphological measure.
 Within each sheet, there will be a table for each well.
 Each table contains the measure of each organoid at each time point that it is found.
-
-## More advanced usage
-A more advanced usage of OrganoTrack considers the other variables that were not 
-
-
 
